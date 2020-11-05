@@ -10,14 +10,10 @@
 from flask import Flask, jsonify, json
 from flask_mqtt import Mqtt
 from flask_cors import CORS
-import base64
-
 import string
-from decimal import Decimal
 import time
 from .connectiondb import Connectiondb
 from .methods import MethodsDatabase
-
 
 app = Flask(__name__)
 cors = CORS(app, resource={
