@@ -114,7 +114,6 @@ class MethodsDatabase:
 
             cur.execute('SELECT * FROM public.dustbin WHERE rnc_org = %s ORDER BY id DESC;',(rncComp,))
             result = cur.fetchall()
-
             if not result:
                 result = None
         
