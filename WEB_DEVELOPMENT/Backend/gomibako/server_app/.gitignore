@@ -1,2 +1,3 @@
 /v_env
 /__pychache__
+.flaskenv
