@@ -22,12 +22,12 @@ class MethodsDatabase:
             print(error)
             return False
 
-    def add_company(rnc, name, provi, address):
+    def add_company(rnc, name, provi, address, coordinates):
         try:
             conn = Connectiondb.getConnectionToPostgre()
             cur = conn.cursor()
 
-            cur.execute('CALL addClientCompany(%s, %s, %s, %s, %s)',(rnc,name,provi,address,datetime.now()))
+            cur.execute('CALL addClientCompany(%s, %s, %s, %s, %s, %s)',(rnc,name,provi,address,coordinates, datetime.now()))
             conn.commit()
             cur.close()
             conn.close()
@@ -62,7 +62,7 @@ class MethodsDatabase:
             conn = Connectiondb.getConnectionToPostgre()
             cur = conn.cursor()
 
-            cur.execute('CALL addUser(%s, %s, %s, %s, %s, %s, %s, %s, %s)',(username,email,password,firstname,lastname,typeU,rncComp,datetime.now(),True))
+            cur.execute('CALL addUser(%s, %s, %s, %s, %s, %s, %s, %s, %s)',(username,email,password,firstname,lastname,typeU,rncComp,True,datetime.now()))
             conn.commit()
             cur.close()
             conn.close()
@@ -92,12 +92,12 @@ class MethodsDatabase:
             print(error)
             return False
 
-    def add_dustbin(deviceEui,typeD,descrip,rncComp,mWaste):
+    def add_dustbin(deviceEui,typeD,descrip,rncComp,mWaste,coordinates):
         try:
             conn = Connectiondb.getConnectionToPostgre()
             cur = conn.cursor()
 
-            cur.execute('CALL addDustbin(%s, %s, %s, %s, %s, %s)',(deviceEui,typeD,descrip,rncComp,datetime.now(),mWaste))
+            cur.execute('CALL addDustbin(%s, %s, %s, %s, %s,%s, %s)',(deviceEui,typeD,descrip,rncComp,mWaste,coordinates,datetime.now()))
             conn.commit()
             cur.close()
             conn.close()

@@ -236,8 +236,8 @@ export default {
                 try {
                
                 
-                this.titlebin = this.selected.split(" ").[0]
-                var res = await axios.get('http://localhost:5000/gomibako/internalapi/1.0/bindata',{ params: {namebin: this.selected.split(" ").[0] }});
+                this.titlebin = this.selected.split(" ")[0]
+                var res = await axios.get('http://localhost:5000/gomibako/internalapi/1.0/bindata',{ params: {namebin: this.selected.split(" ")[0] }});
                 var data = res.data;
                 this.updatetime = data.created_date;
                 this.levelplastic = data.data_sensor.lvlPlastic;

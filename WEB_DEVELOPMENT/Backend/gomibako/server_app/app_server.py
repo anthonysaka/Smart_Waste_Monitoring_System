@@ -82,8 +82,9 @@ def api_client_company():
         name = request.json['name']
         provi = request.json['provincia']
         address = request.json['address']
+        coordinates = request.json['coordinates']
 
-        if(MethodsDatabase.add_company(rnc,name,provi,address)):
+        if(MethodsDatabase.add_company(rnc,name,provi,address,coordinates)):
             return jsonify({'code':201,'response':'Registrado con exito'}),201
         else:
             abort(500,description="Error en la base de datos")
@@ -163,10 +164,9 @@ def api_dustbin(loadtype):
         typeD = request.json['type']
         descrip = request.json['descrip']
         mWaste = request.json['mWaste']
-        print(mWaste)
-        #name = str(typeD[0:1]+"/"+rncComp+"/"+deviceEui)#Inicial del tipo + el OUI 6 primeros simbolos del device eui
+        coordinates = request.json['coordinates']
 
-        if(MethodsDatabase.add_dustbin(deviceEui,typeD,descrip,rncComp,mWaste)):
+        if(MethodsDatabase.add_dustbin(deviceEui,typeD,descrip,rncComp,mWaste,coordinates)):
             name = MethodsDatabase.get_company_list_dustbin(rncComp)[0]['name']
             url0 = 'http://10.0.0.12:8080/api/devices'
             url1 = 'http://10.0.0.12:8080/api/devices/'+deviceEui+'/keys'
@@ -221,14 +221,6 @@ def api_dustbin_data():
         else:
             abort(500,description="Error en la base de datos")
 
-
-
-
-    
-            
-       
-
-
 @app.route("/gomibako/internalapi/1.0/login",methods=['POST'])
 def login():
     if request.method == 'POST':
@@ -240,6 +232,7 @@ def login():
             token = jwt.encode({'user':username,'exp':datetime.datetime.utcnow()+datetime.timedelta(seconds=28800)},app.config['SECRET_KEY'])
             return jsonify({'code':200,'response':"Autentificacion con exito",'token':token.decode('utf-8'),'user':userObject}),200
         elif userObject is None:
+            print("ENTRE")
             return jsonify({'code':404,'response':'Username or password incorrect!'}),404
         else:
             abort(500,description="Error en la base de datos")

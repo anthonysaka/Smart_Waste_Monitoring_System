@@ -207,7 +207,7 @@ export default {
                                                 "firstname":this.formUser.firstname,
                                                 "lastname":this.formUser.lastname,
                                                 "email": this.formUser.email,
-                                                "rncComp": this.formUser.rncComp.split("RNC:").[1]
+                                                "rncComp": this.formUser.rncComp.split("RNC:")[1]
                                             });
 
                 console.log(res.status)
@@ -222,7 +222,7 @@ export default {
                 var res = await axios.post('http://localhost:5000/gomibako/internalapi/1.0/dustbin/0',
                                             {
                                                 "deviceEui":this.formBin.deviceEui,
-                                                "rncComp":this.formBin.rncComp.split("RNC:").[1],
+                                                "rncComp":this.formBin.rncComp.split("RNC:")[1],
                                                 "type": this.formBin.type,
                                                 "descrip": this.formBin.descrip,
                                                 "mWaste": this.formBin.selectedMaterial,
