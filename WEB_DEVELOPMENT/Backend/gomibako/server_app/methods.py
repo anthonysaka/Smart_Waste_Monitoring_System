@@ -112,7 +112,7 @@ class MethodsDatabase:
             conn = Connectiondb.getConnectionToPostgre()
             cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-            cur.execute('SELECT * FROM public.dustbin WHERE rnc_org = %s ORDER BY id DESC;',(rncComp,))
+            cur.execute('SELECT * FROM public.dustbin WHERE rnc_org = %s ORDER BY id ASC;',(rncComp,))
             result = cur.fetchall()
             if not result:
                 result = None
@@ -131,6 +131,25 @@ class MethodsDatabase:
             cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
             cur.execute('SELECT data_sensor, created_date FROM public.dustbindata WHERE device_name = %s ORDER BY created_date DESC;',(namebin,))
+            result = cur.fetchone()
+
+            if not result:
+                result = None
+        
+            conn.commit()
+            cur.close()
+            conn.close()
+            return result
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False
+
+    def get_specific_all_dustbin_data(namebin):
+        try:
+            conn = Connectiondb.getConnectionToPostgre()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+            cur.execute('SELECT data_sensor, created_date FROM public.dustbindata WHERE device_name = %s ORDER BY created_date ASC',(namebin,))
             result = cur.fetchone()
 
             if not result:

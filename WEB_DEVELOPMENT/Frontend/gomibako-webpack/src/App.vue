@@ -24,7 +24,7 @@
             </router-link>
           </li>
           <li>
-            <router-link to="/">
+            <router-link to="/detailbins">
               <i class="fas fa-dumpster"></i>
               Bins
             </router-link>
@@ -35,11 +35,16 @@
               Routing
             </router-link>
           </li>
-
           <li>
             <router-link to="/globaladmin" v-if="userlogged.type == 'Admin'">
               <i class="fas fa-users-cog"></i>
               ADMIN
+            </router-link>
+          </li>
+           <li>
+            <router-link to="" >
+              <i v-on:click="logout" class="fas fa-sign-out-alt"></i>
+              Logout
             </router-link>
           </li>
 
@@ -54,16 +59,16 @@
             <i class="fas fa-align-justify"></i>
           </button> -->
           <!-- Topbar Search -->
-          <form class="d-none d-sm-inline-block form-inline  ml-md-3 my-2 my-md-0 mw-100 navbar-search">
+         <!--  <form class="d-none d-sm-inline-block form-inline  ml-md-3 my-2 my-md-0 mw-100 navbar-search">
             <div class="input-group">
               <input type="text" class="form-control bg-light" placeholder="Search for..." aria-label="Search">
               <div class="input-group-append">
-                <button class="btn btn-primary" @click="logout" type="button">
+                <button class="btn btn-primary"  type="button">
                   <i class="fas fa-search fa-sm"></i>
                 </button>
               </div>
             </div>
-          </form>
+          </form> -->
          <!--  <a class="navbar-brand clearfix mb-2 ml-auto" href="/"><img src="@/assets/img/gomibako_logo_text.png"
               alt="Logo" title="Logo" /></a> -->
           <ul class="navbar-nav ml-auto">

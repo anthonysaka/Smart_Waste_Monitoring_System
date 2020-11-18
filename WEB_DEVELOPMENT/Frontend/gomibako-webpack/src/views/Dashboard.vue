@@ -208,7 +208,7 @@
 import levelChart from '../components/donutChart';
 import axios from 'axios';
 import mapboxgl from "mapbox-gl";
-
+const API_URL = process.env.API_URL;
 export default {
     components:{
         levelChart
@@ -233,20 +233,18 @@ export default {
     methods: {
         async getLastValues(){
             if(this.selected != null) {
-                try {
-               
-                
-                this.titlebin = this.selected.split(" ")[0]
-                var res = await axios.get('http://localhost:5000/gomibako/internalapi/1.0/bindata',{ params: {namebin: this.selected.split(" ")[0] }});
-                var data = res.data;
-                this.updatetime = data.created_date;
-                this.levelplastic = data.data_sensor.lvlPlastic;
-                this.levelmetal = data.data_sensor.lvlMedal;
-                this.levelpaper = data.data_sensor.lvlPaper;
-                console.log(data.data_sensor.lvlPlastic);
-                 console.log(data.data_sensor.lvlMedal);
-                  console.log(data.data_sensor.lvlPaper);
-                this.datacollection = [{
+                try {           
+                    this.titlebin = this.selected.split(" ")[0]
+                    var res = await axios.get(`${API_URL}/bindata/0`,{ params: {namebin: this.selected.split(" ")[0] }});
+                    var data = res.data;
+                    this.updatetime = data.created_date;
+                    this.levelplastic = data.data_sensor.lvlPlastic;
+                    this.levelmetal = data.data_sensor.lvlMedal;
+                    this.levelpaper = data.data_sensor.lvlPaper;
+                    console.log(data.data_sensor.lvlPlastic);
+                    console.log(data.data_sensor.lvlMedal);
+                    console.log(data.data_sensor.lvlPaper);
+                    this.datacollection = [{
                     labels: ['Nivel de llenado'],
                     
                     datasets: [{
@@ -294,7 +292,7 @@ export default {
         async loadAvailableBins(){
             try {
                 console.log(this.userlogged.rnc_org)
-                var res = await axios.get('http://localhost:5000/gomibako/internalapi/1.0/dustbin/1',{ params: {rncComp: this.userlogged.rnc_org }});
+                var res = await axios.get(`${API_URL}/dustbin/1`,{ params: {rncComp: this.userlogged.rnc_org }});
 
                 for (var i = 0; i < res.data.length; i++) {
                     this.listAvailableBins.push(res.data[i].name + " - " + res.data[i].type)        

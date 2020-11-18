@@ -141,6 +141,7 @@
 <script>
 import axios from 'axios';
 import mapboxgl from "mapbox-gl";
+const API_URL = process.env.API_URL;
 
 export default {
     data() {
@@ -177,20 +178,20 @@ export default {
                 ],
             show: true,
             accessToken: 'pk.eyJ1IjoiYW50aG9ueXNha2EiLCJhIjoiY2tnbjBrZWR4MGkwNDJ0cGczb2UxNTE4YiJ9.WsEmhirejFVApuNz9Ivtlw',
-            geojsonLocationBin: null,
-            geojsonLocationCompa: null,
         }
     },
     methods: {
         async addCompany() {
             try {
-                 var res = await axios.post('http://localhost:5000/gomibako/internalapi/1.0/clientCompany',
+                var coord = document.getElementById('coordinatesCompa').textContent.split(" ")
+                var coor = coord[1]+","+coord[3];
+                var res = await axios.post(`${API_URL}/clientCompany`,
                                             {
                                                 "rnc":this.formCompany.rnc,
                                                 "name":this.formCompany.name,
                                                 "provincia": this.formCompany.provincia,
                                                 "address": this.formCompany.address,
-                                                "coordinates":this.geojsonLocationCompa
+                                                "coordinates":coor
                                             });
 
                 console.log(res.status)
@@ -202,7 +203,7 @@ export default {
         async addUser(evt) {
             try {
                 evt.preventDefault()
-                 var res = await axios.post('http://localhost:5000/gomibako/internalapi/1.0/user',
+                 var res = await axios.post(`${API_URL}/user`,
                                             {
                                                 "firstname":this.formUser.firstname,
                                                 "lastname":this.formUser.lastname,
@@ -219,14 +220,16 @@ export default {
         async addBasurero(evt){
             try {
                 evt.preventDefault()
-                var res = await axios.post('http://localhost:5000/gomibako/internalapi/1.0/dustbin/0',
+                var coord = document.getElementById('coordinates').textContent.split(" ")
+                var coor = coord[1]+","+coord[3];
+                var res = await axios.post(`${API_URL}/dustbin/0`,
                                             {
                                                 "deviceEui":this.formBin.deviceEui,
                                                 "rncComp":this.formBin.rncComp.split("RNC:")[1],
                                                 "type": this.formBin.type,
                                                 "descrip": this.formBin.descrip,
                                                 "mWaste": this.formBin.selectedMaterial,
-                                                "coordinates":this.geojsonLocationBin
+                                                "coordinates": coor
                                             });
                 console.log(res.status)
             } catch (error) {
@@ -248,7 +251,7 @@ export default {
         },
         async loadAvailableCompanies(){
             try {
-                var res = await axios.get('http://localhost:5000/gomibako/internalapi/1.0/clientCompany');
+                var res = await axios.get(`${API_URL}/clientCompany`);
 
                 for (var i = 0; i < res.data.length; i++) {
                     this.listAvailableCompanies.push("NOMBRE: " + res.data[i].name + " - RNC:" + res.data[i].rnc)        
@@ -281,6 +284,7 @@ export default {
                     }
                 }]
             };
+            
 
             function onMove(e) {
                 var coords = e.lngLat;
@@ -297,16 +301,12 @@ export default {
 
             function onUp(e) {
                 var coords = e.lngLat;
-
                 // Print the coordinates of where the point had
                 // finished being dragged to on the map.
                 coordinates.style.display = 'block';
                 coordinates.innerHTML =
-                    'Longitude: ' + coords.lng + ' Latitude: ' + coords.lat;
+                    'Long: ' + coords.lng + ' Lat: ' + coords.lat;
                 canvas.style.cursor = '';
-
-                this.geojsonLocationBin = coords.lng + "," + coords.lat;
-                console.log(this.geojsonLocationBin)
 
                 // Unbind mouse/touch events
                 map.off('mousemove', onMove);
@@ -360,7 +360,7 @@ export default {
                     map.on('touchmove', onMove);
                     map.once('touchend', onUp);
                 });
-            });       
+            });
         },
         create_map_point_dragdable_compa(){
             mapboxgl.accessToken = this.accessToken;
@@ -404,11 +404,8 @@ export default {
                 // finished being dragged to on the map.
                 coordinates.style.display = 'block';
                 coordinates.innerHTML =
-                    'Longitude: ' + coords.lng + ' Latitude: ' + coords.lat;
+                    'Long: ' + coords.lng + ' Lat: ' + coords.lat;
                 canvas.style.cursor = '';
-
-                this.geojsonLocationCompa = coords.lng + "," + coords.lat;
-                console.log(this.geojsonLocationCompa)
 
                 // Unbind mouse/touch events
                 map.off('mousemove', onMove);

@@ -1,6 +1,5 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import Home from '../views/Home.vue'
 import store from '../store'
 
 Vue.use(VueRouter)
@@ -45,7 +44,16 @@ const routes = [
     meta: {
       requiresAuth: true,
     }
-  }
+  },
+  {
+    path: '/detailbins',
+    name: 'DetalBins',
+    // which is lazy-loaded when the route is visited.
+    component: () => import('../views/DetailBin.vue'),
+    meta: {
+      requiresAuth: true
+    }
+  },
 ]
 
 

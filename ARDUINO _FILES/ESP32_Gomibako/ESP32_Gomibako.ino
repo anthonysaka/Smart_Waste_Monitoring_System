@@ -21,7 +21,8 @@
 #define TRIG_PIN_2   32          // HC-SR04 trigger pin
 #define ECHO_PIN_2   33          // HC-SR04 echo pin
 
-#define ALTURA  20.1 // Altura del basurero en pulgadas.
+#define H  19.70 // Altura del basurero en pulgadas.
+#define h  15.70 // Altura del basurero en pulgadas.
 
 
 #define TX_GPS_PIN 1
@@ -92,39 +93,9 @@ void setup()
 
 void loop()
 {  
-    lvlPlastic = (read_level_median(TRIG_PIN_0,ECHO_PIN_0)/20.1)*100; 
-    lvlMetal = (read_level_median(TRIG_PIN_1,ECHO_PIN_1)/20.1)*100;
-    lvlPaperCarton = (read_level_median(TRIG_PIN_2,ECHO_PIN_2)/20.1)*100;
-
-   /* if (lvlPlastic >= 157.4800 || lvlPlastic <= 0.7874){
-      DebugSerial.println("Plastic Sensor Out of Range");
-    } else if (lvlPlastic > 21) {
-      DebugSerial.println("Mismatch - Plastic Exceed Max Heigth (21 in) of Container");
-    } else if (lvlPlastic <= 5.9055){
-      DebugSerial.println("Plastic Waste Overload");
-    } else{
-      lvlPlastic = float((lvlPlastic - 5.9055)/ALTURA); //porcentaje
-    }
-  
-    if (lvlMetal >= 157.4800 || lvlMetal <= 0.7874){
-      DebugSerial.println("Metal Sensor Out of Range");
-    } else if (lvlMetal > 21) {
-      DebugSerial.println("Mismatch - Metal Exceed Max Heigth (21 in) of Container");
-    }else if (lvlMetal <= 5.9055){
-      DebugSerial.println("Metal Waste Overload");
-    }else{
-      lvlMetal = float((lvlMetal - 5.9055)/ALTURA); //porcentaje
-    }
- 
-    if (lvlPaperCarton >= 157.4800 || lvlPaperCarton <= 0.7874){
-      DebugSerial.println("PaperCarton Sensor Out of Range");
-    } else if (lvlPaperCarton > 21) {
-      DebugSerial.println("Mismatch - PaperCarton Exceed Max Heigth (21 in) of Container");
-    } else if (lvlPaperCarton <= 5.9055){
-      DebugSerial.println("PaperCarton Waste Overload");
-    } else{
-      lvlPaperCarton = float((lvlPaperCarton - 5.9055)/ALTURA); //porcentaje
-    }*/
+    lvlPlastic = ((H - read_level_median(TRIG_PIN_0,ECHO_PIN_0))/h)*100; 
+    lvlMetal = ((H - read_level_median(TRIG_PIN_1,ECHO_PIN_1))/h)*100;
+    lvlPaperCarton = ((H - read_level_median(TRIG_PIN_2,ECHO_PIN_2))/h)*100;
     
     temperature = tempSensor.readTemperature(); // in Celsius
     humidity = tempSensor.readHumidity(); // in percentage
@@ -246,7 +217,7 @@ float readDistance(int TRIG_PIN, int ECHO_PIN){
     delayMicroseconds(10);
     digitalWrite(TRIG_PIN, LOW); // set the trigger pin LOW
     duration = pulseIn(ECHO_PIN, HIGH);  // measure the echo time (μs)
-    return (duration/74/2);   // convert echo time to distance (inches)
+    return float(duration/2/74);   // convert echo time to distance (inches)
 }
 
 

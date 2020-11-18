@@ -48,7 +48,7 @@ mqtt = Mqtt(app)
 
 if(mqtt):
     print("[*] MQTT Connected OK!")
-    mqtt.subscribe('application/10/device/+/rx')
+    mqtt.subscribe('application/11/device/+/rx')
     print("[*] MQTT Suscribed to application/10/device/+/rx OK!\n\n")
 
     
@@ -165,13 +165,14 @@ def api_dustbin(loadtype):
         descrip = request.json['descrip']
         mWaste = request.json['mWaste']
         coordinates = request.json['coordinates']
+        print(request.json)
 
         if(MethodsDatabase.add_dustbin(deviceEui,typeD,descrip,rncComp,mWaste,coordinates)):
             name = MethodsDatabase.get_company_list_dustbin(rncComp)[0]['name']
             url0 = 'http://10.0.0.12:8080/api/devices'
             url1 = 'http://10.0.0.12:8080/api/devices/'+deviceEui+'/keys'
             myobj0 = {"device": {
-                                        "applicationID": "10",
+                                        "applicationID": "11",
                                         "description": descrip,
                                         "devEUI": deviceEui,
                                         "deviceProfileID": "70298761-1bf9-4a6c-bda1-69a0eb04aaaf",
@@ -207,11 +208,10 @@ def api_dustbin(loadtype):
         else:
             abort(500,description="Error en la base de datos")
 
-@app.route("/gomibako/internalapi/1.0/bindata",methods=['GET'])
-def api_dustbin_data():
-    if request.method == 'GET':
+@app.route("/gomibako/internalapi/1.0/bindata/<int:typeget>",methods=['GET'])
+def api_dustbin_data(typeget):
+    if request.method == 'GET' and typeget == 0:
         namebin = request.args.get('namebin')
-
         data = MethodsDatabase.get_specific_last_dustbin_data(namebin)
 
         if data is not None:
@@ -220,6 +220,16 @@ def api_dustbin_data():
             return jsonify({'code':404,'response':'No hay datos registrados!'}),404
         else:
             abort(500,description="Error en la base de datos")
+    elif request.method == 'GET' and typeget == 1:
+        namebin = request.args.get('namebin')
+        data_all = MethodsDatabase.get_specific_all_dustbin_data(namebin)
+
+        if data_all is not None:
+            return jsonify(data_all),200
+        elif data_all is None:
+            return jsonify({'code':404,'response':'No hay datos registrados!'}),404
+        else:
+            abort(500,description="Error en la base de datos")        
 
 @app.route("/gomibako/internalapi/1.0/login",methods=['POST'])
 def login():

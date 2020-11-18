@@ -2,6 +2,8 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import axios from 'axios'
 
+const API_URL = process.env.API_URL
+
 Vue.use(Vuex)
 
 export default new Vuex.Store({
@@ -33,7 +35,7 @@ export default new Vuex.Store({
     login({commit}, user){
         return new Promise(async(resolve, reject) => {
           commit('auth_request'),
-          await axios({url: 'http://localhost:5000/gomibako/internalapi/1.0/login', data: user, method: 'POST' })
+          await axios({url: `${API_URL}/login`, data: user, method: 'POST' })
           .then(resp => {
             const token = resp.data.token
             const userr = resp.data.user[0]
