@@ -13,14 +13,8 @@
 
           <li>
             <router-link to="/home">
-              <i class="fas fa-home"></i>
-              Home
-            </router-link>
-          </li>
-          <li>
-            <router-link to="/dashboard">
               <i class="fas fa-tachometer-alt"></i>
-              Dashboard
+              Home
             </router-link>
           </li>
           <li>
@@ -30,9 +24,15 @@
             </router-link>
           </li>
           <li>
-            <router-link to="/">
-              <i class="fas fa-dumpster"></i>
-              Routing
+            <router-link to="/trucks">
+              <i class="fas fa-truck"></i>
+              Trucks
+            </router-link>
+          </li>
+          <li>
+            <router-link to="/routing">
+              <i class="fas fa-route"></i>
+              Routes
             </router-link>
           </li>
           <li>
@@ -41,11 +41,9 @@
               ADMIN
             </router-link>
           </li>
-           <li>
-            <router-link to="" >
-              <i v-on:click="logout" class="fas fa-sign-out-alt"></i>
+           <li class="mt-4">
+              <a v-on:click="logout" class="fas fa-sign-out-alt "></a>
               Logout
-            </router-link>
           </li>
 
         </ul>

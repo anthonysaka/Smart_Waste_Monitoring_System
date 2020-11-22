@@ -7,7 +7,7 @@
 
                 </b-tab>
 
-                <b-tab title="(+) Empresa" active>
+                <b-tab title="[+] Empresa" active>
                     <h4 class="mt-4"> INFORMACION EMPRESA </h4>
                     <hr class="line">
 
@@ -33,7 +33,7 @@
                                 placeholder="Ej.: Av. 27 de febrero, Santiago de los caballeros"></b-form-input>
                         </b-form-group>
 
-                        <b-form-group label="Ubicacion:" >
+                        <b-form-group class="mb-4" label="Ubicacion:" >
                             <h5 id="coordinatesCompa" class="coordinates"><b-badge variant="primary"></b-badge></h5>
                             <div class="card shadow">
                                 <div class="card-body">
@@ -44,12 +44,12 @@
 
                         </b-form-group>
 
-                        <b-button class="mr-2" type="submit" variant="primary">Aplicar</b-button>
+                        <b-button class="mr-2" type="submit" variant="primary">Registrar</b-button>
                         <b-button variant="danger">Cancelar</b-button>
                     </b-form>
                 </b-tab>
 
-                <b-tab title="(+) Usuario a empresa">
+                <b-tab title="[+] Usuario a empresa">
                     <h4 class="mt-4"> INFORMACION USUARIO </h4>
                     <hr class="line">
 
@@ -69,7 +69,7 @@
                             </b-form-input>
                         </b-form-group>
 
-                         <b-form-group label="Empresa a la que pertenece:" label-for="inputUserCompany">
+                         <b-form-group class="mb-4" label="Empresa a la que pertenece:" label-for="inputUserCompany">
                             <b-form-select id="inputUserCompany" v-model="formUser.rncComp" :options="listAvailableCompanies" required></b-form-select>
                         </b-form-group>
 
@@ -78,7 +78,7 @@
                     </b-form>
                 </b-tab>
 
-                <b-tab title="(+) Basurero">
+                <b-tab title="[+] Basurero">
                     <h4 class="mt-4"> INFORMACION BASURERO </h4>
                     <hr class="line">
 
@@ -117,7 +117,7 @@
                             > </b-form-radio-group>
                         </b-form-group>
 
-                        <b-form-group label="Descripcion:" label-for="inputBinDescrip">
+                        <b-form-group class="mb-4" label="Descripcion:" label-for="inputBinDescrip">
                             <b-form-input id="inputBinDescrip" v-model="formBin.descrip" required placeholder="Ej.: Gomibako.SRL">
                             </b-form-input>
                         </b-form-group>
@@ -168,7 +168,7 @@ export default {
                 
             },
             provinciaList: ['La Vega','Puerto Plata','Punta Cana','Santiago', 'Santo Domingo'],
-            listBinTypes: ['Tradicional - 1 contenedor','Reciclaje - 3 contenedores (plastico/metal/papel-carton)'],
+            listBinTypes: ['Tradicional - 1 contenedor','Reciclaje - 3 contenedores'],
             listAvailableCompanies: [],
             chk_materialbasura:[
                 { text: 'Plastico', value: 'plastico' },
@@ -251,7 +251,7 @@ export default {
         },
         async loadAvailableCompanies(){
             try {
-                var res = await axios.get(`${API_URL}/clientCompany`);
+                var res = await axios.get(`${API_URL}/clientCompany/0`);
 
                 for (var i = 0; i < res.data.length; i++) {
                     this.listAvailableCompanies.push("NOMBRE: " + res.data[i].name + " - RNC:" + res.data[i].rnc)        

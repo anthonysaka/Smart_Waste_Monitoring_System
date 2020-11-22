@@ -28,10 +28,28 @@ const routes = [
     }
   },
   {
-    path: '/dashboard',
-    name: 'Dashboard',
+    path: '/detailbins',
+    name: 'DetalBins',
     // which is lazy-loaded when the route is visited.
-    component: () => import('../views/Dashboard.vue'),
+    component: () => import('../views/DetailBin.vue'),
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/trucks',
+    name: 'Truck',
+    // which is lazy-loaded when the route is visited.
+    component: () => import('../views/Truck.vue'),
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
+    path: '/routing',
+    name: 'Routes',
+    // which is lazy-loaded when the route is visited.
+    component: () => import('../views/Routing.vue'),
     meta: {
       requiresAuth: true
     }
@@ -45,15 +63,7 @@ const routes = [
       requiresAuth: true,
     }
   },
-  {
-    path: '/detailbins',
-    name: 'DetalBins',
-    // which is lazy-loaded when the route is visited.
-    component: () => import('../views/DetailBin.vue'),
-    meta: {
-      requiresAuth: true
-    }
-  },
+ 
 ]
 
 

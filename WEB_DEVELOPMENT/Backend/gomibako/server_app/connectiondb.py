@@ -5,10 +5,10 @@ class Connectiondb():
 
         try:
             connection = psycopg2.connect(user = "anthonysaka",
-                                        password = "nose@postgre",
+                                        password = "nose@postgres",
                                         host = "127.0.0.1",
                                         port = "5432",
-                                        database = "gomiprueba")
+                                        database = "gomibako")
            
             print("conectado a la db con exito")
           #  print ( connection.get_dsn_parameters(),"\n")

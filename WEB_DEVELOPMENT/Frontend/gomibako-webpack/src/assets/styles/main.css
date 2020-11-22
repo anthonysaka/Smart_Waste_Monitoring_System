@@ -14,7 +14,7 @@ html {
     line-height: 1.15;
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-    background-color: #161616e3;
+    background-color: rgba(14, 14, 14);
     height: 100%;
 }
 
@@ -26,7 +26,8 @@ body {
     line-height: 1.5;
     color: #ffffff;
     text-align: left;
-    background-color: #161616e3;
+    background-color: rgba(14, 14, 14);
+
     
 }
 
@@ -93,10 +94,9 @@ strong {
     flex-direction: column;
     min-width: 0;
     word-wrap: break-word;
-    background-color: #121212 ;
-    background-clip: border-box;
-    border: 2px solid #070707;
-    border-radius: 0.4rem;
+        background-color: rgba(22, 22, 22);   background-clip: border-box;
+  /*  border: 2px solid #070707;*/
+    border-radius: 0.8rem;
     color: #fff;
    
 }
@@ -112,14 +112,19 @@ strong {
 .card-header {
     padding: auto;
     margin-bottom: 0;
-    background-color: rgba(0,0,0,.03);
-    border-bottom: 1px solid rgba(0,0,0,.125);
+   /* background-color: rgba(0, 0, 0, 0.233);*/
+   /* border-bottom: 1px solid rgba(0,0,0,.125);*/
 }
 
 .card-body {
     /*flex: 1 1 auto;*/
-    min-height: 1px;
-    padding: 1.25rem;
+    min-height: 50px;
+    padding: 1rem;
+    /*background-color: rgba(0, 0, 0, 0.233);*/
+}
+
+.d-flex {
+    background-color: transparent;
 }
 
 .card-title {
@@ -172,11 +177,9 @@ img {
 ----------------------------------------------------- */
 .navbar {
     /* padding: 15px 10px 5px;*/
-    background: #121212;
-    border: none;
+        background-color: rgba(22, 22, 22);   border: none;
     border-radius: 0;
     margin-bottom: 3px;
-    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
     height: 4.5rem;
 
 }
@@ -280,7 +283,7 @@ img {
 #sidebar {
     min-width: 200px;
     max-width: 200px;
-    background: #121212;
+    background-color: rgba(22, 22, 22);   
     color: #fff;
     transition: all 0.3s;
     z-index: 5;
@@ -426,7 +429,7 @@ ul.CTAs a {
 
 #content {
     width: 100%;
-    padding: 10px 20px;
+    padding: 10px 10px;
     transition: all 0.3s;
 }
 
@@ -457,6 +460,15 @@ ul.CTAs a {
     cursor: pointer;
   }
 
+.marker1 {
+    background-image: url('../img/garage-open.png');
+    background-size: cover;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
 .mapboxgl-popup {
     max-width: 200px;
 }
@@ -473,7 +485,14 @@ ul.CTAs a {
 
 /******************/
 
-
+.jumbotron {
+    /*background-color: rgba(22, 22, 22);   */
+    background-color:transparent;
+    filter: brightness(90%);
+    /* border: 1px solid #0f31a0; */
+    border-radius: 0.35rem;
+    color: #fff;
+}
 
 .badge {
     font-size: 0.9rem;
@@ -481,19 +500,29 @@ ul.CTAs a {
 }
 
 table{
-    background-color:#121212 ;
+    background-color:transparent;
     filter: brightness(90%);
     /* border: 1px solid #0f31a0; */
-    border-radius: 0.35rem !important;
+    border-radius: 0.38rem !important;
+    color: #fff !important;
+}
+.thead-light{
+    background-color: rgba(22, 22, 22) !important; 
+    border-radius: 0.38rem !important;
+    color: #fff !important;
+}
+th{
+    background-color: rgba(22, 22, 22) !important;  
+    border-radius: 0.38rem !important;
     color: #fff !important;
 }
 
 
 
 .minicard {
-    background-color:#121212 ;
+   /* background-color: rgba(0, 0, 0, 0.233);*/
     filter: brightness(90%);
-    /* border: 1px solid #0f31a0; */
+    /*border: 1px solid black;*/
     border-radius: 0.35rem;
     color: #fff;
 

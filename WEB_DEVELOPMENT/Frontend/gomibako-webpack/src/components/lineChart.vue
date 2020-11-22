@@ -12,42 +12,37 @@ export default {
             responsive: true,
             layout: {
                 padding: {
-                    left: 5,
-                    right: 5,
+                    left: 0,
+                    right: 0,
                     top: 0,
                     bottom: 0
                 }
             },
             scales: {
                 xAxes: [{
+                    display: true,
                     time: {
                         unit: 'date'
-                    },
-                    gridLines: {
-                        display: false,
-                        drawBorder: false
                     },
                     ticks: {
                         maxTicksLimit: 10
                     }
                 }],
                 yAxes: [{
-                    stacked: true,
+                    display: true,
                     ticks: {
-                        maxTicksLimit: 10,
                         beginAtZero: true,
+                        max:100,
+                        suggestedMax: 100,
+                        min:0,
+                        suggestedMin:0,
+                        stepSize: 10,
+                        maxTicksLimit: 11,
                     },
-                    gridLines: {
-                        color: "rgb(234, 236, 244)",
-                        zeroLineColor: "rgb(234, 236, 244)",
-                        drawBorder: false,
-                        borderDash: [2],
-                        zeroLineBorderDash: [2]
-                    }
                 }],
             },
             legend: {
-                display: false
+                display: true,
             },
             tooltips: {
                 backgroundColor: "rgb(255,255,255)",

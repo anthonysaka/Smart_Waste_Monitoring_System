@@ -6,12 +6,12 @@ from datetime import datetime
 
 class MethodsDatabase:
 
-    def save_sensor_data(deviceEui,devicename,data):
+    def save_sensor_data(deviceEui,devicename,data,date):
         try:
             conn = Connectiondb.getConnectionToPostgre()
             cur = conn.cursor()
 
-            cur.execute('CALL saveSensorData(%s, %s, %s, %s)',(deviceEui,devicename,data,datetime.now()))
+            cur.callproc('savesensordata',(deviceEui,devicename,data,date))
 
             conn.commit()
             cur.close()
@@ -42,7 +42,7 @@ class MethodsDatabase:
             conn = Connectiondb.getConnectionToPostgre()
             cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-            cur.execute('SELECT * FROM public.clientCompany;')
+            cur.execute('SELECT * FROM public.company;')
             result = cur.fetchall()
 
             if not result:
@@ -57,6 +57,28 @@ class MethodsDatabase:
             print(error)
             return False
     
+    def get_company(rncComp):
+        try:
+            conn = Connectiondb.getConnectionToPostgre()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+            cur.execute('SELECT * FROM public.company WHERE rnc = %s;',(str(rncComp),))
+            result = cur.fetchall()
+
+            if not result:
+                result = None
+        
+            conn.commit()
+            cur.close()
+            conn.close()
+            return result
+
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False
+    
+    
+
     def add_user(username,email,password,firstname,lastname,typeU,rncComp):
         try:
             conn = Connectiondb.getConnectionToPostgre()
@@ -112,7 +134,7 @@ class MethodsDatabase:
             conn = Connectiondb.getConnectionToPostgre()
             cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-            cur.execute('SELECT * FROM public.dustbin WHERE rnc_org = %s ORDER BY id ASC;',(rncComp,))
+            cur.execute('SELECT * FROM public.dustbin WHERE rnc_compa = %s ORDER BY id ASC;',(rncComp,))
             result = cur.fetchall()
             if not result:
                 result = None
@@ -149,8 +171,8 @@ class MethodsDatabase:
             conn = Connectiondb.getConnectionToPostgre()
             cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-            cur.execute('SELECT data_sensor, created_date FROM public.dustbindata WHERE device_name = %s ORDER BY created_date ASC',(namebin,))
-            result = cur.fetchone()
+            cur.execute('SELECT data_sensor, created_date FROM public.dustbindata WHERE device_name = %s ORDER BY created_date ASC LIMIT 10;',(namebin,))
+            result = cur.fetchall()
 
             if not result:
                 result = None
@@ -202,3 +224,35 @@ class MethodsDatabase:
             return False
         
 
+    def add_truck(placa,ano,marca,modelo,cap_kg,cap_vol,rncComp):
+        try:
+            conn = Connectiondb.getConnectionToPostgre()
+            cur = conn.cursor()
+
+            cur.execute('CALL addtruck(%s, %s, %s, %s, %s, %s, %s, %s)',(placa,ano,marca,modelo,cap_kg,cap_vol,rncComp,datetime.now()))
+            conn.commit()
+            cur.close()
+            conn.close()
+            return True
+
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False
+
+    def get_company_list_truck(rncComp):
+        try:
+            conn = Connectiondb.getConnectionToPostgre()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+            cur.execute('SELECT * FROM public.truck WHERE rnc_compa = %s ORDER BY cap_carga_vol DESC;',(rncComp,))
+            result = cur.fetchall()
+            if not result:
+                result = None
+        
+            conn.commit()
+            cur.close()
+            conn.close()
+            return result
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False

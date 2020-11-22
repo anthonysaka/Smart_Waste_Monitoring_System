@@ -1,82 +1,288 @@
 <template>
-  <div class="detailbin">
+  <div class="Dashboard">
+    <b-container fluid>
 
-    <div class="d-flex flex-column mb-4">
-      <b-row>
-
-        <b-col cols="12" md="4">
-          <div class="card shadow">
-            <div class="card-body">
-              <div class="chart-area pt-4">
-                <lineChart :width="200" :height="200" v-if="loaded" 
-                    :chart-data="datacollection[0]">
-                </lineChart>
+      <b-jumbotron class="jumbotron pt-4">
+         <h5 class="h5 text-gray-800"><strong> GRAFICOS </strong></h5>
+        <b-row>
+            <!-- MAP -->
+          <b-col cols="12" md="5">
+            <div class="card">
+              <div class="card-body">
+                <div class="chart-area pt-4">
+                  <lineChart :width="200" :height="250" v-if="loadedLine" :chart-data="datacollectionLine[0]">
+                  </lineChart>
+                </div>
               </div>
             </div>
-          </div>
-        </b-col>
 
+            <div class="card mt-2">
+              <div class="card-body">
+                <div class="chart-area pt-4">
+                  <lineChart :width="200" :height="250" v-if="loadedLine" :chart-data="datacollectionLine[1]">
+                  </lineChart>
+                </div>
+              </div>
+            </div>
+
+            
+
+          </b-col>
+
+            <!-- LIVE DATA -->
+          <b-col cols="12" md="7">
+            <div class="card mb-4">
+              <b-form-select searchable="Search here.." v-model="selected" :options="listAvailableBins" class="mb-0" value-field="item"
+                text-field="name" disabled-field="notEnabled"></b-form-select>
+            </div>
+            <div class="card w-200">
+              <div class="d-flex px-2 pb-4">
+                <h5 class="h5 mr-auto ml-2 mt-2 mb-n1 text-gray-800" style="color: RGB(79, 79, 79) !important;">Live
+                  Data of:<strong>{{titlebin}}</strong></h5>
+                <hr>
+                <h5 class="h5 mt-2 mb-n1 mr-2  text-gray-800" style="color: RGB(79, 79, 79) !important;">Last update
+                  at:<strong>{{updatetime}}</strong></h5>
+                <hr>
+              </div>
+
+              <div class="d-flex flex-column mb-4" style="background-color:transparent !important;">
+                <b-row style="background-color:transparent !important;">
+                  <b-col cols="12" md="3">
+                    <div class="minicard  h-10 py-1 ml-2 mr-2">
+                      <div class="card-body" style="height: 10vh;">
+                        <div class="d-flex flex-column">
+                          <div class="text-xs font-weight-bold text-center mt-n3 text-primary text-uppercase mb-1">
+                            <strong>Temperatura (°C)</strong></div>
+                        </div>
+                        <b-row>
+                          <b-col cols="6">
+                            <div class="d-flex flex-column text-center">
+                              <i class="fas fa-temperature-high fa-2x"></i>
+                            </div>
+                          </b-col>
+                          <b-col cols="6">
+                            <div class="h5 mb-0 text-center mt-2 px-0 font-weight-bold text-gray-800">
+                              <b-badge variant="primary">{{tempValue}}</b-badge>
+                            </div>
+                          </b-col>
+
+                        </b-row>
+                      </div>
+                    </div>
+                  </b-col>
+
+                  <b-col cols="12" md="3">
+                    <div class="minicard  h-10 py-1 ml-2 mr-2">
+                      <div class="card-body" style="height: 10vh;">
+                        <div class="d-flex flex-column">
+                          <div class="text-xs font-weight-bold text-center mt-n3 text-primary text-uppercase mb-1">
+                            <strong>Humedad (%)</strong></div>
+                        </div>
+                        <b-row>
+                          <b-col cols="6">
+                            <div class="d-flex flex-column text-center">
+                              <i class="fas fa-tint fa-2x"></i>
+                            </div>
+                          </b-col>
+                          <b-col cols="6">
+                            <div class="h5 mb-0 text-center mt-2 font-weight-bold text-gray-800">
+                              <b-badge variant="primary">{{humValue}}</b-badge>
+                            </div>
+                          </b-col>
+
+                        </b-row>
+                      </div>
+                    </div>
+                  </b-col>
+
+                  <b-col cols="12" md="3">
+                    <div class="minicard  h-10 py-1 ml-2 mr-2">
+                      <div class="card-body" style="height: 10vh;">
+                        <div class="d-flex flex-column">
+                          <div class="text-xs font-weight-bold text-center mt-n3 text-primary text-uppercase mb-1">
+                            Bateria (%)</div>
+                        </div>
+                        <b-row>
+                          <b-col cols="6">
+                            <div class="d-flex flex-column text-center">
+                              <i class="fas fa-battery-three-quarters fa-2x"></i>
+                            </div>
+                          </b-col>
+                          <b-col cols="6">
+                            <div class="h5 mb-0 text-center mt-2 font-weight-bold text-gray-800">
+                              N/A</div>
+                          </b-col>
+
+                        </b-row>
+                      </div>
+                    </div>
+                  </b-col>
+
+                  <b-col cols="12" md="3">
+                    <div class="minicard  h-10 py-1 ml-2 mr-2">
+                      <div class="card-body" style="height: 10vh;">
+                        <div class="d-flex flex-column">
+                          <div class="text-xs font-weight-bold text-center mt-n3 text-primary text-uppercase mb-1">
+                            ESTADO</div>
+                        </div>
+                        <b-row>
+                          <b-col cols="6">
+                            <div class="d-flex flex-column text-center">
+                              <i class="fas fa-tint fa-2x"></i>
+                            </div>
+                          </b-col>
+                          <b-col cols="6">
+                            <div class="h5 mb-0 text-center mt-2 font-weight-bold text-gray-800">
+                              N/A</div>
+                          </b-col>
+
+                        </b-row>
+                      </div>
+                    </div>
+                  </b-col>
+                </b-row>
+              </div>
+
+              <div class="d-flex flex-column mb-4">
+                <b-row>
+                  <b-col cols="12" md="4">
+                    <div class="minicard  mb-2 mt-2 ml-2 mr-0"  v-if="show_three">
+                      <!-- Card Header -->
+                      <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary"><strong>Plastico:</strong>
+                          <b-badge pill variant="primary">{{ levelplastic }} %</b-badge>
+                        </h6>
+                      </div>
+                      <!-- Card Body -->
+                      <div class="card-body">
+                        <div class="chart-pie pt-4">
+                          <levelChart :width="150" :height="150" v-if="loadedDonut" :chart-data="datacollectionDonut[0]">
+                          </levelChart>
+                        </div>
+                      </div>
+                    </div>
+                  </b-col>
+
+                  <b-col cols="12" md="4">
+                    <div class="minicard  mb-2 mt-2 ml-0 mr-0" v-if="show_three">
+                      <!-- Card Header -->
+                      <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary"><strong>Metal:</strong>
+                          <b-badge pill variant="primary">{{ levelmetal }} %</b-badge>
+                        </h6>
+                      </div>
+                      <!-- Card Body -->
+                      <div class="card-body">
+                        <div class="chart-pie pt-4">
+                          <levelChart :width="150" :height="150" v-if="loadedDonut" :chart-data="datacollectionDonut[1]">
+                          </levelChart>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="minicard  mb-2 mt-2 ml-0 mr-0" v-if="show_one">
+                      <!-- Card Header -->
+                      <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary"><strong>{{typeM}}:</strong>
+                          <b-badge pill variant="primary">{{ levelSingle }} %</b-badge>
+                        </h6>
+                      </div>
+                      <!-- Card Body -->
+                      <div class="card-body">
+                        <div class="chart-pie pt-4">
+                          <levelChart :width="150" :height="150" v-if="loadedDonut" :chart-data="datacollectionDonut[3]">
+                          </levelChart>
+                        </div>
+                      </div>
+                    </div>
+                  </b-col>
+
+                  <b-col cols="12" md="4">
+                    <div class="minicard  mb-2 mt-2 ml-0 mr-2"  v-if="show_three">
+                      <!-- Card Header -->
+                      <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary"><strong>Papel/Carton:</strong>
+                          <b-badge pill variant="primary">{{ levelpaper}} %</b-badge>
+                        </h6>
+                      </div>
+                      <!-- Card Body -->
+                      <div class="card-body">
+                        <div class="chart-pie pt-4">
+                          <levelChart :width="150" :height="150" v-if="loadedDonut" :chart-data="datacollectionDonut[2]">
+                          </levelChart>
+                        </div>
+                      </div>
+                    </div>
+                  </b-col>
+
+
+
+
+                </b-row>
+              </div>
+            </div>
+          </b-col>
+        </b-row>
+
+      </b-jumbotron>
+
+<!-- SECOND SECTION -->
+      <b-jumbotron class="jumbotron">
         <b-col cols="12" md="8">
-            <b-table    responsive="sm" 
-                        striped hover 
-                        :items="items" 
-                        :fields="fields" 
-                        head-variant="light"
-                        selectable
-                        select-mode="single"
-                        @row-selected="onRowSelected">
-                    
-                    <!-- Example scoped slot for select state illustrative purposes -->
-                    <template #cell(selected)="{ rowSelected }">
-                        <template v-if="rowSelected">
-                            <span aria-hidden="true">&check;</span>
-                            <span class="sr-only">Selected</span>
-                        </template>
-                        <template v-else>
-                            <span aria-hidden="true">&nbsp;</span>
-                            <span class="sr-only">Not selected</span>
-                        </template>
-                    </template>
+          <b-table responsive="sm" borderless hover :items="items" :fields="fields" head-variant="light" selectable
+            select-mode="single" @row-selected="onRowSelected">
 
-            </b-table>
+            <!-- Example scoped slot for select state illustrative purposes -->
+            <template #cell(selected)="{ rowSelected }">
+              <template v-if="rowSelected">
+                <span aria-hidden="true">&check;</span>
+                <span class="sr-only">Selected</span>
+              </template>
+              <template v-else>
+                <span aria-hidden="true">&nbsp;</span>
+                <span class="sr-only">Not selected</span>
+              </template>
+            </template>
+
+          </b-table>
         </b-col>
+      </b-jumbotron>
 
-
-      </b-row>
+           
+        </b-container>
     </div>
-      
-   <div class="d-flex flex-column mt-2">
-     <b-row>
-       <b-col cols="6" md="4">
-         <!-- <div class="card shadow">
-           <div class="card-body">
-             <div class="chart-area pt-4">
-               <lineChart :width="200" :height="200" v-if="loaded" :chart-data="datacollection[0]">
-               </lineChart>
-             </div>
-           </div>
-         </div> -->
-       </b-col>
 
-     </b-row>
-   </div>
-     
-      
-  </div>
 </template>
 
 <script>
+import levelChart from '../components/donutChart';
 import lineChart from '../components/lineChart';
 import axios from 'axios';
-const API_URL = process.env.API_URL
+import mapboxgl from "mapbox-gl";
+const API_URL = process.env.API_URL;
 export default {
     components:{
+        levelChart,
         lineChart,
     },
-    data() {
+    data (){
         return {
-            datacollection: [],
-            loaded: false,
+            userlogged: JSON.parse(localStorage.getItem('userdata')),
+            datacollectionDonut: [],
+            datacollectionLine: [],
+            loadedDonut: false,
+            loadedLine: false,
+            tempValue: null,
+            humValue: null,
+            levelplastic: null,
+            levelmetal: null,
+            levelpaper: null,
+            levelSingle:null,
+            selected: null,
+            titlebin: null,
+            updatetime:null,
+            listAvailableBins: [ ],
+            accessToken: 'pk.eyJ1IjoiYW50aG9ueXNha2EiLCJhIjoiY2tnbjBrZWR4MGkwNDJ0cGczb2UxNTE4YiJ9.WsEmhirejFVApuNz9Ivtlw',
             fields: [
                 {
                     key: 'selected',
@@ -116,63 +322,341 @@ export default {
 
             ],
             items: [ ],
-            selected:null,
-            userlogged: JSON.parse(localStorage.getItem('userdata')),
+            selectedTable: null,
+            show_one: false,
+            show_three: false,
+            typeM: '',
         }
     },
     methods: {
+        async getLastValues(){
+            if(this.selected != null) {
+             
+                var auxlvlPlast = 0;
+                var auxlvlMetal = 0;
+                var auxlvlPaper = 0;
+                var auxlvlSingle = 0;
+
+                try {           
+                    this.titlebin = this.selected.split(" ")[0]
+                    var res = await axios.get(`${API_URL}/bindata/0`,{ params: {namebin: this.selected.split(" ")[0] }});
+                    var data = res.data;
+
+                    if (this.selected.split(" - ")[1] == 'Tradicional'){
+                        this.show_one = true;
+                        this.show_three = false;
+                        this.typeM = this.selected.split(" - ")[3]
+                        auxlvlSingle = data.data_sensor.lvlsingle;
+                        this.levelSingle = data.data_sensor.lvlsingle;
+                      } else { 
+                        this.show_three = true;
+                        this.show_one = false;
+                        auxlvlPlast = data.data_sensor.lvlPlastic;
+                        auxlvlMetal = data.data_sensor.lvlMedal;
+                        auxlvlPaper = data.data_sensor.lvlPaper;
+                        this.levelplastic = auxlvlPlast;
+                        this.levelmetal = auxlvlMetal;
+                        this.levelpaper = auxlvlPaper; 
+
+                       }
+
+                    this.updatetime = data.cr;
+                   /*
+                    if (data.data_sensor.lvlPlastic < 10) {
+                        this.levelplastic = 0;
+                        auxlvlPlast = 0;        
+                    }
+                    if (data.data_sensor.lvlMedal < 10) {
+                        this.levelmetal = 0;
+                        auxlvlMetal = 0;        
+                    }
+                    if (data.data_sensor.lvlPaper < 10) {
+                        this.levelpaper = 0;
+                        auxlvlPaper = 0;        
+                    }
+
+                    if (data.data_sensor.lvlPlastic >= 10 && data.data_sensor.lvlPlastic < 20) {
+                        this.levelplastic = 10;
+                        auxlvlPlast = 10;        
+                    }
+                    if (data.data_sensor.lvlMedal >= 10 && data.data_sensor.lvlMedal < 20) {
+                        this.levelmetal = 10;
+                        auxlvlMetal = 10;        
+                    }
+                    if (data.data_sensor.lvlPaper>= 10 &&data.data_sensor.lvlPaper < 20) {
+                        this.levelpaper =10;
+                        auxlvlPaper = 10;        
+                    }
+
+
+                    if (data.data_sensor.lvlPlastic >= 20 && data.data_sensor.lvlPlastic < 40) {
+                        this.levelplastic = 20;
+                        auxlvlPlast = 20;
+                    }
+                    if (data.data_sensor.lvlMedal >= 20 && data.data_sensor.lvlMedal < 40) {
+                        this.levelmetal = 20;
+                        auxlvlMetal = 20;
+                    }
+                    if (data.data_sensor.lvlPaper >= 20 && data.data_sensor.lvlPaper < 40) {
+                        this.levelpaper = 20;
+                        auxlvlPaper = 20;
+                    }
+
+
+                    if (data.data_sensor.lvlPlastic >= 40 && data.data_sensor.lvlPlastic < 60) {
+                        this.levelplastic = 40;
+                        auxlvlPlast = 40;
+                    }
+                    if (data.data_sensor.lvlMedal >= 40 && data.data_sensor.lvlMedal < 60) {
+                        this.levelmetal = 40;
+                        auxlvlMetal = 40;
+                    }
+                    if (data.data_sensor.lvlPaper >= 40 && data.data_sensor.lvlPaper < 60) {
+                        this.levelpaper = 40;
+                        auxlvlPaper = 40;
+                    }
+
+
+                    if (data.data_sensor.lvlPlastic >= 60 && data.data_sensor.lvlPlastic < 80) {
+                        this.levelplastic = 60;
+                        auxlvlPlast = 60;
+                    }
+                    if (data.data_sensor.lvlMedal >= 60 && data.data_sensor.lvlMedal < 80) {
+                        this.levelmetal = 60;
+                        auxlvlMetal = 60;
+                    }
+                    if (data.data_sensor.lvlPaper >= 60 && data.data_sensor.lvlPaper < 80) {
+                        this.levelpaper = 60;
+                        auxlvlPaper = 60;
+                    }
+
+
+                    if (data.data_sensor.lvlPlastic >= 80 && data.data_sensor.lvlPlastic < 90) {
+                        this.levelplastic = 80;
+                        auxlvlPlast = 80;
+                    }
+                    if (data.data_sensor.lvlMedal >= 80 && data.data_sensor.lvlMedal < 90) {
+                        this.levelmetal = 80;
+                        auxlvlMetal = 80;
+                    }
+                    if (data.data_sensor.lvlPaper >= 80 && data.data_sensor.lvlPaper < 90) {
+                        this.levelpaper = 80;
+                        auxlvlPaper = 80;
+                    }
+
+
+                    if (data.data_sensor.lvlPlastic >= 90 && data.data_sensor.lvlPlastic < 95) {
+                        this.levelplastic = 90;
+                        auxlvlPlast = 90;
+                    }
+                    if (data.data_sensor.lvlMedal >= 90 && data.data_sensor.lvlMedal < 95) {
+                        this.levelmetal = 90;
+                        auxlvlMetal = 90;
+                    }
+                    if (data.data_sensor.lvlPaper >= 90 && data.data_sensor.lvlPaper < 95) {
+                        this.levelpaper = 90;
+                        auxlvlPaper = 90;
+                    }
+
+
+                    if (data.data_sensor.lvlPlastic >= 95 && data.data_sensor.lvlPlastic < 100) {
+                        this.levelplastic = 95;
+                        auxlvlPlast = 95;
+                    }
+                    if (data.data_sensor.lvlMedal >= 95 && data.data_sensor.lvlMedal < 100) {
+                        this.levelmetal = 95;
+                        auxlvlMetal = 95;
+                    }
+                    if (data.data_sensor.lvlPaper >= 95 && data.data_sensor.lvlPaper < 100) {
+                        this.levelpaper = 95;
+                        auxlvlPaper = 95;
+                    }
+
+
+                    if (data.data_sensor.lvlPlastic >= 100) {
+                        this.levelplastic = 100;
+                        auxlvlPlast = 100;
+                    }
+                    if (data.data_sensor.lvlMedal >= 100) {
+                        this.levelmetal = 100;
+                        auxlvlMetal = 100;
+                    }
+                    if (data.data_sensor.lvlPaper >= 100) {
+                        this.levelpaper = 100;
+                        auxlvlPaper = 100;
+                    }                 
+                    */
+                    this.datacollectionDonut = [{
+                    labels: ['Nivel de llenado'],
+                    
+                    datasets: [{
+                        label: 'Data One',
+                        backgroundColor: ['#2e59d9', "#ffffff"],
+                        hoverBackgroundColor: ['#2e59d9','#ffffff'],
+                        borderColor:['#2e59d9', "#ffffff"],
+                        hoverBorderColor: ["#070707","#070707"],
+                        data: [auxlvlPlast, 100 - auxlvlPlast]
+                }],
+                },{
+                    labels: ['Nivel de llenado'],
+                    datasets: [{
+                        label: 'Data One',
+                        backgroundColor: ['#2e59d9', "#ffffff"],
+                        hoverBackgroundColor: ['#2e59d9','#ffffff'],
+                        borderColor:['#2e59d9', "#ffffff"],
+                        hoverBorderColor: ["#070707","#070707"],
+                        data: [auxlvlMetal, 100 - auxlvlMetal]
+                }],
+                },{
+                    labels: ['Nivel de llenado'],
+                    datasets: [{
+                        label: 'Data One',
+                        backgroundColor: ['#2e59d9', "#ffffff"],
+                        hoverBackgroundColor: ['#2e59d9','#ffffff'],
+                        borderColor:['#2e59d9', "#ffffff"],
+                        hoverBorderColor: ["#070707","#070707"],
+                        data: [auxlvlPaper, 100 - auxlvlPaper]
+                }],
+                },{
+                    labels: ['Nivel de llenado'],
+                    datasets: [{
+                        label: 'Data One',
+                        backgroundColor: ['#2e59d9', "#ffffff"],
+                        hoverBackgroundColor: ['#2e59d9','#ffffff'],
+                        borderColor:['#2e59d9', "#ffffff"],
+                        hoverBorderColor: ["#070707","#070707"],
+                        data: [auxlvlSingle, 100 - auxlvlSingle]
+                }],
+                }
+                ];
+                this.tempValue = data.data_sensor.temperature;
+                this.humValue = data.data_sensor.humidity;
+               
+                
+                this.loadedDonut = true;
+              } catch (error) {
+                  console.error(error);
+              }       
+
+            }
+            
+        },
         async getBinValues(){
             if(this.selected != null) {
                 try {           
-                    var res = await axios.get(`${API_URL}/bindata/1`,{ params: {namebin: this.selected.name }});
+                    var res = await axios.get(`${API_URL}/bindata/1`,{ params: {namebin: this.selected.split(" ")[0] }});
                     var data = res.data;
+                    console.log(data.length)
                  
                     var labels = []
-                    var datasetsPlastic = [
-                                {
-                                label: 'Line Chart',
-                                data: [],
-                                fill: false,
-                                borderColor: '#2554FF',
-                                backgroundColor: '#2554FF',
-                                borderWidth: 2
-                                }
-                            ]
-                    var datasetsMetal = [
-                                {
-                                label: 'Line Chart',
-                                data: [],
-                                fill: false,
-                                borderColor: '#FF5425',
-                                backgroundColor: '#FF5425',
-                                borderWidth: 2
-                                }
-                            ]
-                    var datasetsPaper = [
-                                {
-                                label: 'Line Chart',
-                                data: [],
-                                fill: false,
-                                borderColor: '#FFFFFF',
-                                backgroundColor: '#FFFFFF',
-                                borderWidth: 2
-                                }
-                            ]
 
-                    for (var i = 0; i < data.length; i++) {
-                       labels.push(data[i].created_date)
-                       datasetsPlastic.data.push(data[i].data_sensor.lvlPlastic)
-                       datasetsMetal.data.push(data[i].data_sensor.lvlMedal)
-                       datasetsPaper.data.push(data[i].data_sensor.lvlPaper)
-                    }
-                    
-                    this.datacollection = [{
-                        labels: labels,
-                        datasets: [datasetsPlastic,datasetsMetal,datasetsPaper]
+                    if (this.selected.split(" - ")[1] == 'Tradicional') {
+                      var datasetsSingle = {
+                        label: this.selected.split(" - ")[3],
+                        data: [],
+                        fill: true,
+                        borderColor: '#2554FF',
+                        backgroundColor: 'rgba(33, 76, 229, 0.5)',
+                        borderWidth: 2
+                      }
+                      var datasetsSingleTem = {
+                        label: 'Temperatura(C)',
+                        data: [],
+                        fill: true,
+                        borderColor: '#2554FF',
+                        backgroundColor: 'rgba(33, 76, 229, 0.5)',
+                        borderWidth: 2
+                      }
+                      var datasetsSingleHum = {
+                        label: 'Humedad(%)',
+                        data: [],
+                        fill: true,
+                        borderColor: '#FFFFFF',
+                        backgroundColor: 'rgba(100, 100, 100, 0.8)',
+                        borderWidth: 2
+                      }
+
+                      for (var i = 0; i < data.length; i++) {
+                        console.log(data[i].data_sensor.lvlPlastic)
+                        labels.push(data[i].created_date.split("GMT")[0])
+                        datasetsSingle.data.push(data[i].data_sensor.lvlsingle)
+                        datasetsSingleTem.data.push(data[i].data_sensor.temperature)
+                        datasetsSingleHum.data.push(data[i].data_sensor.humidity)  
+                      }
+                    this.datacollectionLine = [{
+                      labels: labels,
+                      datasets: [datasetsSingle]
+                    },{
+                      labels: labels,
+                      datasets: [datasetsSingleTem,datasetsSingleHum]
+                    },
+                    ];
+                    } 
+                    else {
+                      var datasetsPlastic = {
+                        label: 'Plastico',
+                        data: [],
+                        fill: true,
+                        borderColor: '#2554FF',
+                        backgroundColor: 'rgba(33, 76, 229, 0.5)',
+                        borderWidth: 2
+                      }
+                      var datasetsMetal = {
+                        label: 'Metal',
+                        data: [],
+                        fill: true,
+                        borderColor: '#FF5425',
+                        backgroundColor: 'rgba(229, 76, 33,0.5)',
+                        borderWidth: 2
+                      }
+                      var datasetsPaper = {
+                        label: 'Papel/Carton',
+                        data: [],
+                        fill: true,
+                        borderColor: '#FFFFFF',
+                        backgroundColor: 'rgba(100, 100, 100, 0.8)',
+                        borderWidth: 2
+                      }
+                      var datasetsTem = {
+                        label: 'Temperatura(C)',
+                        data: [],
+                        fill: true,
+                        borderColor: '#2554FF',
+                        backgroundColor: 'rgba(33, 76, 229, 0.5)',
+                        borderWidth: 2
+                      }
+                      var datasetsHum = {
+                        label: 'Humedad(%)',
+                        data: [],
+                        fill: true,
+                        borderColor: '#FFFFFF',
+                        backgroundColor: 'rgba(100, 100, 100, 0.8)',
+                        borderWidth: 2
+                      }
+
+                      for (var i = 0; i < data.length; i++) {
+                        console.log(data[i].data_sensor.lvlPlastic)
+                        labels.push(data[i].created_date.split("GMT")[0])
+                        datasetsPlastic.data.push(data[i].data_sensor.lvlPlastic)
+                        datasetsMetal.data.push(data[i].data_sensor.lvlMedal)
+                        datasetsPaper.data.push(data[i].data_sensor.lvlPaper)
+                        datasetsTem.data.push(data[i].data_sensor.temperature)
+                        datasetsHum.data.push(data[i].data_sensor.humidity)
+                      }
+
+                    this.datacollectionLine = [{
+                      labels: labels,
+                      datasets: [datasetsPlastic, datasetsMetal, datasetsPaper]
+
+                    },{
+                      labels: labels,
+                      datasets: [datasetsTem,datasetsHum]
 
                     }];
-                this.loaded = true;
-                
+
+                    }
+                    //console.log(labels)
+                    this.loadedLine = true;
             } catch (error) {
                 console.error(error);
             }       
@@ -182,12 +666,13 @@ export default {
         },
         async loadAvailableBins(){
             try {
-                console.log(this.userlogged.rnc_org)
-                var res = await axios.get(`${API_URL}/dustbin/1`,{ params: {rncComp: this.userlogged.rnc_org }});
-                console.log(res.data)
+                console.log(this.userlogged.rnc_compa)
+                var res = await axios.get(`${API_URL}/dustbin/1`,{ params: {rncComp: this.userlogged.rnc_compa}});
+
                 for (var i = 0; i < res.data.length; i++) {
+                    this.listAvailableBins.push(res.data[i].name + " - " + res.data[i].type + " - " + res.data[i].material_waste)        
                     let row = {name:res.data[i].name,deviceEUI:res.data[i].deviceeui,type:res.data[i].type,material:res.data[i].material_waste,location:res.data[i].coordinates,description:res.data[i].description}
-                    this.items.push(row)        
+                    this.items.push(row) 
                 }
                 console.log(res.status)
             } catch (error) {
@@ -195,17 +680,34 @@ export default {
             }
         },
         onRowSelected(items) {
-            this.selected = items;
+            this.selectedTable = items;
             this.getBinValues();
         },
     },
     mounted(){
+        this.getLastValues()
+        setInterval(this.getLastValues, 5000)
 
-        this.loadAvailableBins();
+        this.getBinValues()
+        setInterval(this.getBinValues, 5000)
+
+
+        this.loadAvailableBins()
+       
+
+       /* mapboxgl.accessToken = this.accessToken;
+
+           var map = new mapboxgl.Map({
+                container: "map",
+                style: "mapbox://styles/mapbox/streets-v11",
+                center: [-70.703692, 19.415888],
+                zoom: 12,
+            });*/
     }
 }
+
 </script>
 
 <style>
-
+    @import '../assets/styles/main.css';
 </style>

@@ -110,10 +110,11 @@
     methods: {
       async loadAvailableBins() {
         try {
-          console.log(this.userlogged.rnc_org)
-          var res = await axios.get(`${API_URL}/dustbin/1`, {
+          console.log(this.userlogged.rnc_compa)
+          var res = null;
+          res = await axios.get(`${API_URL}/dustbin/1`, {
             params: {
-              rncComp: this.userlogged.rnc_org
+              rncComp: this.userlogged.rnc_compa
             }
           });
           var auxFeatures = [];
@@ -146,7 +147,8 @@
             zoom: 12,
           });
 
-          // add markers to map
+          if (res != null) {
+            // add markers to map
           this.geoJson.features.forEach(function (marker) {
 
             // create a HTML element for each feature
@@ -161,10 +163,19 @@
                 }) // add popups
                 .setHTML('<h5>' + marker.properties.title + '</h5><strong>' + marker.properties.description + '</strong>'))
               .addTo(map);
-          });
+          });        
+          }
+          
 
         } catch (error) {
           console.log(error)
+           mapboxgl.accessToken = this.accessToken;
+          var map = new mapboxgl.Map({
+            container: "map",
+            style: "mapbox://styles/mapbox/streets-v11",
+            center: [-70.703692, 19.415888],
+            zoom: 12,
+          });
         }
       }
       },
