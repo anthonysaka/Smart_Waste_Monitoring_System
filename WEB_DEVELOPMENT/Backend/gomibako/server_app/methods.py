@@ -134,7 +134,7 @@ class MethodsDatabase:
             conn = Connectiondb.getConnectionToPostgre()
             cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-            cur.execute('SELECT * FROM public.dustbin WHERE rnc_compa = %s ORDER BY id ASC;',(rncComp,))
+            cur.execute('SELECT * FROM public.dustbin WHERE rnc_compa = %s ORDER BY id DESC;',(rncComp,))
             result = cur.fetchall()
             if not result:
                 result = None
@@ -171,7 +171,7 @@ class MethodsDatabase:
             conn = Connectiondb.getConnectionToPostgre()
             cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-            cur.execute('SELECT data_sensor, created_date FROM public.dustbindata WHERE device_name = %s ORDER BY created_date ASC LIMIT 10;',(namebin,))
+            cur.execute('SELECT data_sensor, created_date FROM (SELECT data_sensor, created_date FROM public.dustbindata WHERE device_name = %s ORDER BY created_date DESC LIMIT 10) AS last10values ORDER BY created_date ASC;',(namebin,))
             result = cur.fetchall()
 
             if not result:

@@ -3,9 +3,19 @@
     <b-container fluid>
 
       <b-jumbotron class="jumbotron pt-4">
-         <h5 class="h5 text-gray-800"><strong> GRAFICOS </strong></h5>
+        <h5 class="h5 text-gray-800 mb-2"><strong> GRAFICOS </strong></h5>
         <b-row>
-            <!-- MAP -->
+          <b-container>
+            <div class="d-flex justify-content- mb-4">
+              <b-form-select searchable="Search here.." v-model="selected" :options="listAvailableBins" class="mb- mr-4"
+                     value-field="item" text-field="name" disabled-field="notEnabled"></b-form-select>
+               <b-button @click="updateValuesPeriodically" variant="primary">Ok!</b-button>
+            </div>      
+          </b-container>
+        </b-row>
+        
+        
+        <b-row>
           <b-col cols="12" md="5">
             <div class="card">
               <div class="card-body">
@@ -25,17 +35,13 @@
               </div>
             </div>
 
-            
+
 
           </b-col>
 
             <!-- LIVE DATA -->
-          <b-col cols="12" md="7">
-            <div class="card mb-4">
-              <b-form-select searchable="Search here.." v-model="selected" :options="listAvailableBins" class="mb-0" value-field="item"
-                text-field="name" disabled-field="notEnabled"></b-form-select>
-            </div>
-            <div class="card w-200">
+          <b-col cols="12" md="7" style="margin-top:3.8%;">
+            <div class="card w-200" >
               <div class="d-flex px-2 pb-4">
                 <h5 class="h5 mr-auto ml-2 mt-2 mb-n1 text-gray-800" style="color: RGB(79, 79, 79) !important;">Live
                   Data of:<strong>{{titlebin}}</strong></h5>
@@ -128,12 +134,12 @@
                         <b-row>
                           <b-col cols="6">
                             <div class="d-flex flex-column text-center">
-                              <i class="fas fa-tint fa-2x"></i>
+                              <i class="fas fa-2x fa-info-circle"></i>
                             </div>
                           </b-col>
                           <b-col cols="6">
-                            <div class="h5 mb-0 text-center mt-2 font-weight-bold text-gray-800">
-                              N/A</div>
+                            <div class="h6 ml-n4 mb-0 text-center mt-2 font-weight-bold text-gray-800"> 
+                              <b-badge variant="primary">{{binStatus}}</b-badge></div>
                           </b-col>
 
                         </b-row>
@@ -259,6 +265,7 @@ import levelChart from '../components/donutChart';
 import lineChart from '../components/lineChart';
 import axios from 'axios';
 import mapboxgl from "mapbox-gl";
+import Swal from 'sweetalert2';
 const API_URL = process.env.API_URL;
 export default {
     components:{
@@ -274,6 +281,7 @@ export default {
             loadedLine: false,
             tempValue: null,
             humValue: null,
+            binStatus: null,
             levelplastic: null,
             levelmetal: null,
             levelpaper: null,
@@ -281,7 +289,7 @@ export default {
             selected: null,
             titlebin: null,
             updatetime:null,
-            listAvailableBins: [ ],
+            listAvailableBins: [{text: 'Please select an option'}],
             accessToken: 'pk.eyJ1IjoiYW50aG9ueXNha2EiLCJhIjoiY2tnbjBrZWR4MGkwNDJ0cGczb2UxNTE4YiJ9.WsEmhirejFVApuNz9Ivtlw',
             fields: [
                 {
@@ -326,214 +334,105 @@ export default {
             show_one: false,
             show_three: false,
             typeM: '',
+            namebin: ''
         }
     },
     methods: {
         async getLastValues(){
-            if(this.selected != null) {
-             
+            if(this.selected != null) {      
                 var auxlvlPlast = 0;
                 var auxlvlMetal = 0;
                 var auxlvlPaper = 0;
                 var auxlvlSingle = 0;
 
                 try {           
-                    this.titlebin = this.selected.split(" ")[0]
-                    var res = await axios.get(`${API_URL}/bindata/0`,{ params: {namebin: this.selected.split(" ")[0] }});
+                    this.titlebin = this.namebin.split(" ")[0]
+                    var res = await axios.get(`${API_URL}/bindata/0`,{ params: {namebin: this.namebin.split(" ")[0]}});
                     var data = res.data;
 
-                    if (this.selected.split(" - ")[1] == 'Tradicional'){
-                        this.show_one = true;
-                        this.show_three = false;
-                        this.typeM = this.selected.split(" - ")[3]
-                        auxlvlSingle = data.data_sensor.lvlsingle;
-                        this.levelSingle = data.data_sensor.lvlsingle;
-                      } else { 
-                        this.show_three = true;
-                        this.show_one = false;
-                        auxlvlPlast = data.data_sensor.lvlPlastic;
-                        auxlvlMetal = data.data_sensor.lvlMedal;
-                        auxlvlPaper = data.data_sensor.lvlPaper;
-                        this.levelplastic = auxlvlPlast;
-                        this.levelmetal = auxlvlMetal;
-                        this.levelpaper = auxlvlPaper; 
-
-                       }
-
-                    this.updatetime = data.cr;
-                   /*
-                    if (data.data_sensor.lvlPlastic < 10) {
-                        this.levelplastic = 0;
-                        auxlvlPlast = 0;        
-                    }
-                    if (data.data_sensor.lvlMedal < 10) {
-                        this.levelmetal = 0;
-                        auxlvlMetal = 0;        
-                    }
-                    if (data.data_sensor.lvlPaper < 10) {
-                        this.levelpaper = 0;
-                        auxlvlPaper = 0;        
-                    }
-
-                    if (data.data_sensor.lvlPlastic >= 10 && data.data_sensor.lvlPlastic < 20) {
-                        this.levelplastic = 10;
-                        auxlvlPlast = 10;        
-                    }
-                    if (data.data_sensor.lvlMedal >= 10 && data.data_sensor.lvlMedal < 20) {
-                        this.levelmetal = 10;
-                        auxlvlMetal = 10;        
-                    }
-                    if (data.data_sensor.lvlPaper>= 10 &&data.data_sensor.lvlPaper < 20) {
-                        this.levelpaper =10;
-                        auxlvlPaper = 10;        
-                    }
-
-
-                    if (data.data_sensor.lvlPlastic >= 20 && data.data_sensor.lvlPlastic < 40) {
-                        this.levelplastic = 20;
-                        auxlvlPlast = 20;
-                    }
-                    if (data.data_sensor.lvlMedal >= 20 && data.data_sensor.lvlMedal < 40) {
-                        this.levelmetal = 20;
-                        auxlvlMetal = 20;
-                    }
-                    if (data.data_sensor.lvlPaper >= 20 && data.data_sensor.lvlPaper < 40) {
-                        this.levelpaper = 20;
-                        auxlvlPaper = 20;
-                    }
-
-
-                    if (data.data_sensor.lvlPlastic >= 40 && data.data_sensor.lvlPlastic < 60) {
-                        this.levelplastic = 40;
-                        auxlvlPlast = 40;
-                    }
-                    if (data.data_sensor.lvlMedal >= 40 && data.data_sensor.lvlMedal < 60) {
-                        this.levelmetal = 40;
-                        auxlvlMetal = 40;
-                    }
-                    if (data.data_sensor.lvlPaper >= 40 && data.data_sensor.lvlPaper < 60) {
-                        this.levelpaper = 40;
-                        auxlvlPaper = 40;
-                    }
-
-
-                    if (data.data_sensor.lvlPlastic >= 60 && data.data_sensor.lvlPlastic < 80) {
-                        this.levelplastic = 60;
-                        auxlvlPlast = 60;
-                    }
-                    if (data.data_sensor.lvlMedal >= 60 && data.data_sensor.lvlMedal < 80) {
-                        this.levelmetal = 60;
-                        auxlvlMetal = 60;
-                    }
-                    if (data.data_sensor.lvlPaper >= 60 && data.data_sensor.lvlPaper < 80) {
-                        this.levelpaper = 60;
-                        auxlvlPaper = 60;
-                    }
-
-
-                    if (data.data_sensor.lvlPlastic >= 80 && data.data_sensor.lvlPlastic < 90) {
-                        this.levelplastic = 80;
-                        auxlvlPlast = 80;
-                    }
-                    if (data.data_sensor.lvlMedal >= 80 && data.data_sensor.lvlMedal < 90) {
-                        this.levelmetal = 80;
-                        auxlvlMetal = 80;
-                    }
-                    if (data.data_sensor.lvlPaper >= 80 && data.data_sensor.lvlPaper < 90) {
-                        this.levelpaper = 80;
-                        auxlvlPaper = 80;
-                    }
-
-
-                    if (data.data_sensor.lvlPlastic >= 90 && data.data_sensor.lvlPlastic < 95) {
-                        this.levelplastic = 90;
-                        auxlvlPlast = 90;
-                    }
-                    if (data.data_sensor.lvlMedal >= 90 && data.data_sensor.lvlMedal < 95) {
-                        this.levelmetal = 90;
-                        auxlvlMetal = 90;
-                    }
-                    if (data.data_sensor.lvlPaper >= 90 && data.data_sensor.lvlPaper < 95) {
-                        this.levelpaper = 90;
-                        auxlvlPaper = 90;
-                    }
-
-
-                    if (data.data_sensor.lvlPlastic >= 95 && data.data_sensor.lvlPlastic < 100) {
-                        this.levelplastic = 95;
-                        auxlvlPlast = 95;
-                    }
-                    if (data.data_sensor.lvlMedal >= 95 && data.data_sensor.lvlMedal < 100) {
-                        this.levelmetal = 95;
-                        auxlvlMetal = 95;
-                    }
-                    if (data.data_sensor.lvlPaper >= 95 && data.data_sensor.lvlPaper < 100) {
-                        this.levelpaper = 95;
-                        auxlvlPaper = 95;
-                    }
-
-
-                    if (data.data_sensor.lvlPlastic >= 100) {
-                        this.levelplastic = 100;
-                        auxlvlPlast = 100;
-                    }
-                    if (data.data_sensor.lvlMedal >= 100) {
-                        this.levelmetal = 100;
-                        auxlvlMetal = 100;
-                    }
-                    if (data.data_sensor.lvlPaper >= 100) {
-                        this.levelpaper = 100;
-                        auxlvlPaper = 100;
-                    }                 
-                    */
-                    this.datacollectionDonut = [{
-                    labels: ['Nivel de llenado'],
                     
-                    datasets: [{
-                        label: 'Data One',
-                        backgroundColor: ['#2e59d9', "#ffffff"],
-                        hoverBackgroundColor: ['#2e59d9','#ffffff'],
-                        borderColor:['#2e59d9', "#ffffff"],
-                        hoverBorderColor: ["#070707","#070707"],
-                        data: [auxlvlPlast, 100 - auxlvlPlast]
-                }],
-                },{
-                    labels: ['Nivel de llenado'],
-                    datasets: [{
-                        label: 'Data One',
-                        backgroundColor: ['#2e59d9', "#ffffff"],
-                        hoverBackgroundColor: ['#2e59d9','#ffffff'],
-                        borderColor:['#2e59d9', "#ffffff"],
-                        hoverBorderColor: ["#070707","#070707"],
-                        data: [auxlvlMetal, 100 - auxlvlMetal]
-                }],
-                },{
-                    labels: ['Nivel de llenado'],
-                    datasets: [{
-                        label: 'Data One',
-                        backgroundColor: ['#2e59d9', "#ffffff"],
-                        hoverBackgroundColor: ['#2e59d9','#ffffff'],
-                        borderColor:['#2e59d9', "#ffffff"],
-                        hoverBorderColor: ["#070707","#070707"],
-                        data: [auxlvlPaper, 100 - auxlvlPaper]
-                }],
-                },{
-                    labels: ['Nivel de llenado'],
-                    datasets: [{
-                        label: 'Data One',
-                        backgroundColor: ['#2e59d9', "#ffffff"],
-                        hoverBackgroundColor: ['#2e59d9','#ffffff'],
-                        borderColor:['#2e59d9', "#ffffff"],
-                        hoverBorderColor: ["#070707","#070707"],
-                        data: [auxlvlSingle, 100 - auxlvlSingle]
-                }],
-                }
-                ];
-                this.tempValue = data.data_sensor.temperature;
-                this.humValue = data.data_sensor.humidity;
-               
-                
-                this.loadedDonut = true;
+                        if (this.namebin.split(" - ")[1] == 'Tradicional'){
+                          this.show_one = true;
+                          this.show_three = false;
+                          this.typeM = this.namebin.split(" - ")[3]
+                          auxlvlSingle = data.data_sensor.lvlsingle;
+                          this.levelSingle = data.data_sensor.lvlsingle;
+
+                          if(data.data_sensor.codeStatus == 2){
+                            this.binStatus = 'OVERLOAD'
+                          }else if (data.data_sensor.codeStatus == 1){
+                            this.binStatus = 'FULL'
+                          }else{
+                            this.binStatus = 'NORMAL'
+                          }
+                        } else { 
+                          this.show_three = true;
+                          this.show_one = false;
+                          auxlvlPlast = data.data_sensor.lvlPlastic;
+                          auxlvlMetal = data.data_sensor.lvlMedal;
+                          auxlvlPaper = data.data_sensor.lvlPaper;
+                          this.levelplastic = auxlvlPlast;
+                          this.levelmetal = auxlvlMetal;
+                          this.levelpaper = auxlvlPaper; 
+
+                          if(data.data_sensor.codeStatusPlastic == 2 || data.data_sensor.codeStatusMetal == 2 || data.data_sensor.codeStatusPaper == 2){
+                            this.binStatus = 'OVERLOAD'
+                          }else if (data.data_sensor.codeStatus == 1 || data.data_sensor.codeStatusMetal == 1 || data.data_sensor.codeStatusPaper == 1){
+                            this.binStatus = 'FULL'
+                          }else{
+                            this.binStatus = 'NORMAL'
+                          }
+
+                        }
+                            this.datacollectionDonut = [{
+                            labels: ['Nivel de llenado'],
+                            
+                            datasets: [{
+                                label: 'Data One',
+                                backgroundColor: ['#2e59d9', "#ffffff"],
+                                hoverBackgroundColor: ['#2e59d9','#ffffff'],
+                                borderColor:['#2e59d9', "#ffffff"],
+                                hoverBorderColor: ["#070707","#070707"],
+                                data: [auxlvlPlast, 100 - auxlvlPlast]
+                        }],
+                        },{
+                            labels: ['Nivel de llenado'],
+                            datasets: [{
+                                label: 'Data One',
+                                backgroundColor: ['#2e59d9', "#ffffff"],
+                                hoverBackgroundColor: ['#2e59d9','#ffffff'],
+                                borderColor:['#2e59d9', "#ffffff"],
+                                hoverBorderColor: ["#070707","#070707"],
+                                data: [auxlvlMetal, 100 - auxlvlMetal]
+                        }],
+                        },{
+                            labels: ['Nivel de llenado'],
+                            datasets: [{
+                                label: 'Data One',
+                                backgroundColor: ['#2e59d9', "#ffffff"],
+                                hoverBackgroundColor: ['#2e59d9','#ffffff'],
+                                borderColor:['#2e59d9', "#ffffff"],
+                                hoverBorderColor: ["#070707","#070707"],
+                                data: [auxlvlPaper, 100 - auxlvlPaper]
+                        }],
+                        },{
+                            labels: ['Nivel de llenado'],
+                            datasets: [{
+                                label: 'Data One',
+                                backgroundColor: ['#2e59d9', "#ffffff"],
+                                hoverBackgroundColor: ['#2e59d9','#ffffff'],
+                                borderColor:['#2e59d9', "#ffffff"],
+                                hoverBorderColor: ["#070707","#070707"],
+                                data: [auxlvlSingle, 100 - auxlvlSingle]
+                        }],
+                        }
+                        ];
+                        
+                        this.updatetime = data.created_date;
+                        this.tempValue = data.data_sensor.temperature;
+                        this.humValue = data.data_sensor.humidity;
+                        this.loadedDonut = true;
+
               } catch (error) {
                   console.error(error);
               }       
@@ -541,18 +440,18 @@ export default {
             }
             
         },
-        async getBinValues(){
+        async getBinGraphicValues(){
             if(this.selected != null) {
                 try {           
-                    var res = await axios.get(`${API_URL}/bindata/1`,{ params: {namebin: this.selected.split(" ")[0] }});
+                    var res = await axios.get(`${API_URL}/bindata/1`,{ params: {namebin: this.namebin.split(" ")[0] }});
                     var data = res.data;
                     console.log(data.length)
                  
                     var labels = []
 
-                    if (this.selected.split(" - ")[1] == 'Tradicional') {
+                    if (this.namebin.split(" - ")[1] == 'Tradicional') {
                       var datasetsSingle = {
-                        label: this.selected.split(" - ")[3],
+                        label: this.namebin.split(" - ")[3],
                         data: [],
                         fill: true,
                         borderColor: '#2554FF',
@@ -577,7 +476,6 @@ export default {
                       }
 
                       for (var i = 0; i < data.length; i++) {
-                        console.log(data[i].data_sensor.lvlPlastic)
                         labels.push(data[i].created_date.split("GMT")[0])
                         datasetsSingle.data.push(data[i].data_sensor.lvlsingle)
                         datasetsSingleTem.data.push(data[i].data_sensor.temperature)
@@ -664,6 +562,35 @@ export default {
             }
             
         },
+        async updateValuesPeriodically(){
+          var x,y;
+          if(this.selected != null){
+             
+            try {
+              var res = await axios.get(`${API_URL}/bindata/0`,{ params: {namebin: this.selected.split(" ")[0] }});
+
+              if (res.status == 200) {
+                clearInterval(x);
+                clearInterval(y);
+                this.namebin = this.selected
+                this.getLastValues()
+                this.getBinGraphicValues()
+                x = setInterval(this.getLastValues,30000)
+                y = setInterval(this.getBinGraphicValues,30000)   
+              }        
+            } catch (error) {
+              Swal.fire(
+                'No hay datos!',
+                '',
+                'error'
+              )
+              
+            }
+              
+            } else { 
+
+            }
+        },
         async loadAvailableBins(){
             try {
                 console.log(this.userlogged.rnc_compa)
@@ -681,17 +608,10 @@ export default {
         },
         onRowSelected(items) {
             this.selectedTable = items;
-            this.getBinValues();
+            this.getBinGraphicValues();
         },
     },
     mounted(){
-        this.getLastValues()
-        setInterval(this.getLastValues, 5000)
-
-        this.getBinValues()
-        setInterval(this.getBinValues, 5000)
-
-
         this.loadAvailableBins()
        
 

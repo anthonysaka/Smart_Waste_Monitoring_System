@@ -13,10 +13,12 @@ from flask_cors import CORS
 from flask_mail import Mail, Message
 import string, time, random, requests
 import jwt
+from datetime import datetime as dtime
 import datetime
 from .connectiondb import Connectiondb
 from .methods import MethodsDatabase
 from .smart_routes import *
+from os import environ
 
 app = Flask(__name__)
 cors = CORS(app, resource={
@@ -30,7 +32,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USERNAME'] = 'anthonysk2017@gmail.com'
-app.config['MAIL_PASSWORD'] = 'semeolvido1999'
+app.config['MAIL_PASSWORD'] = environ.get('MAIL_PASSWORD')
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 
@@ -63,50 +65,13 @@ def handle_mqtt_message(client, userdata, message):
     device_name = str(dict_data['deviceName'])
     json_sensor_data = json.dumps(dict_data['object'],indent=4)
 
-    if(MethodsDatabase.save_sensor_data(device_eui,device_name,json_sensor_data,datetime.now())):
+    if(MethodsDatabase.save_sensor_data(device_eui,device_name,json_sensor_data,dtime.now())):
         print("[*] Sensor Data Saved OK!\n")
     else:
         print("[*] Sensor Data Saved ERROR!\n")
 
 
 #! ***************************************************
-
-
-@app.route("/gomibako/internalapi/1.0/clientCompany/<int:loadtype>",methods=['POST','GET'])
-def api_client_company(loadtype):
-    if request.method == 'POST':
-    
-        rnc = request.json['rnc']
-        name = request.json['name']
-        provi = request.json['provincia']
-        address = request.json['address']
-        coordinates = request.json['coordinates']
-
-        if(MethodsDatabase.add_company(rnc,name,provi,address,coordinates)):
-            return jsonify({'code':201,'response':'Registrado con exito'}),201
-        else:
-            abort(500,description="Error en la base de datos")
-
-    elif request.method == 'GET' and loadtype == 0:
-
-        listcompanies = MethodsDatabase.get_list_company()
-        if listcompanies is not None:
-            return jsonify(listcompanies),201
-        elif listcompanies is None:
-            return jsonify({'code':404,'response':'No hay empresas registradas!'}),404
-        else:
-            abort(500,description="Error en la base de datos")
-    
-    elif request.method == 'GET' and loadtype == 1:
-        rncComp = request.args.get('rncComp')
-        companies = MethodsDatabase.get_company(rncComp)
-        if companies is not None:
-            return jsonify(companies),201
-        elif companies is None:
-            return jsonify({'code':404,'response':'No hay empresa registrada con este rnc'}),404
-        else:
-            abort(500,description="Error en la base de datos")
-    
 
 def generator_random_default_user_password():
     LETTERS = string.ascii_letters
@@ -143,6 +108,42 @@ def generator_random_default_username(firstname,lastname):
     random_username = ''.join(random_username)
     return random_username
 
+#! ENDPOINT ROUTES
+@app.route("/gomibako/internalapi/1.0/clientCompany/<int:loadtype>",methods=['POST','GET'])
+def api_client_company(loadtype):
+    if request.method == 'POST':
+    
+        rnc = request.json['rnc']
+        name = request.json['name']
+        provi = request.json['provincia']
+        address = request.json['address']
+        coordinates = request.json['coordinates']
+
+        if(MethodsDatabase.add_company(rnc,name,provi,address,coordinates)):
+            return jsonify({'code':201,'response':'Registrado con exito'}),201
+        else:
+            abort(500,description="Error en la base de datos")
+
+    elif request.method == 'GET' and loadtype == 0:
+
+        listcompanies = MethodsDatabase.get_list_company()
+        if listcompanies is not None:
+            return jsonify(listcompanies),201
+        elif listcompanies is None:
+            return jsonify({'code':404,'response':'No hay empresas registradas!'}),404
+        else:
+            abort(500,description="Error en la base de datos")
+    
+    elif request.method == 'GET' and loadtype == 1:
+        rncComp = request.args.get('rncComp')
+        companies = MethodsDatabase.get_company(rncComp)
+        if companies is not None:
+            return jsonify(companies),201
+        elif companies is None:
+            return jsonify({'code':404,'response':'No hay empresa registrada con este rnc'}),404
+        else:
+            abort(500,description="Error en la base de datos")
+    
 @app.route("/gomibako/internalapi/1.0/user",methods=['POST','GET'])
 def api_user():
     if request.method == 'POST':    
@@ -180,7 +181,7 @@ def api_dustbin(loadtype):
 
         if(MethodsDatabase.add_dustbin(deviceEui,typeD,descrip,rncComp,mWaste,coordinates)):
 
-            if typeD == 'Reciclaje - 3 contenedores (plastico/metal/papel-carton)':
+            if typeD == 'Reciclaje - 3 contenedores':
                 name = MethodsDatabase.get_company_list_dustbin(rncComp)[0]['name']
                 url0 = 'http://10.0.0.12:8080/api/devices'
                 url1 = 'http://10.0.0.12:8080/api/devices/'+deviceEui+'/keys'
@@ -283,8 +284,7 @@ def modify_default_credentials():
             return jsonify({'code':404,'response':'El usuario ya existe!'}),404
         else:
             abort(500,description="Error en la base de datos")
-
-        
+      
 @app.route("/gomibako/internalapi/1.0/truck",methods=['POST','GET'])
 def api_truck():
     if request.method == 'POST':

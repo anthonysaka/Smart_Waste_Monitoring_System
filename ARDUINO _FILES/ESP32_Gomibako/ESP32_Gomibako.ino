@@ -7,9 +7,9 @@
 
 /********** Libraries **********/
 #include <HardwareSerial.h>
-#include "TinyGPS++.h"
 #include "DHT.h"
 #include "RAK811.h"
+#include <math.h>       /* modf */
 
 /********** Defines Constants Sensors **********/
 #define TRIG_PIN_0   18          // HC-SR04 trigger pin
@@ -21,8 +21,8 @@
 #define TRIG_PIN_2   32          // HC-SR04 trigger pin
 #define ECHO_PIN_2   33          // HC-SR04 echo pin
 
-#define H  19.70 // Altura del basurero en pulgadas.
-#define h  15.70 // Altura del basurero en pulgadas.
+#define H  19// Altura del basurero en pulgadas.
+#define h  15 // Altura del basurero en pulgadas.
 
 
 #define TX_GPS_PIN 1
@@ -47,8 +47,6 @@ String const AppKey = "ac3c4d337abf61032a1e6cbc616b6e04"; // This values are uni
 
 
 /********** Aux Library Objects **********/
-//HardwareSerial uartGps(2);
-TinyGPSPlus gps;
 DHT tempSensor(DHT_PIN, DHTTYPE);
 HardwareSerial uartRak(2);
 RAK811 rak811LoRa(uartRak,DebugSerial);
@@ -58,14 +56,7 @@ bool InitLoRaWAN(void);
 void setupRAK811Node(void);
 
 /***** Global Variables ******/
-float lvlPlastic = 0.00;
-float lvlMetal = 0.00;
-float lvlPaperCarton = 0.00;
-float temperature = 0.00;
-float humidity = 0.00;
-
 char buffer[242];
-
 
 
 /********** BEGIN SETUP **********/
@@ -73,8 +64,6 @@ void setup()
 {
   DebugSerial.begin(115200);
   uartRak.begin(BAUD_RATE_LORA, SERIAL_8N1, RX_TO_LORA_PIN, TX_TO_LORA_PIN);
- // uartGps.begin(BAUD_RATE_GPS, SERIAL_8N1, RX_GPS_PIN, TX_GPS_PIN); //Init Serial GPS
-  
   tempSensor.begin(); // Init Temperature Sensor DHT-22
 
   pinMode(TRIG_PIN_0, OUTPUT); //Trigger pin as output
@@ -84,31 +73,88 @@ void setup()
   pinMode(TRIG_PIN_2, OUTPUT); //Trigger pin as output
   pinMode(ECHO_PIN_2, INPUT); //Echo pin as input
 
-
   setupRAK811Node();
-
+ 
   delay(2000); //Time to init the system
-
 }
 
 void loop()
 {  
-    lvlPlastic = ((H - read_level_median(TRIG_PIN_0,ECHO_PIN_0))/h)*100; 
-    lvlMetal = ((H - read_level_median(TRIG_PIN_1,ECHO_PIN_1))/h)*100;
-    lvlPaperCarton = ((H - read_level_median(TRIG_PIN_2,ECHO_PIN_2))/h)*100;
+    float temperature = tempSensor.readTemperature(); // in Celsius
+    float humidity = tempSensor.readHumidity(); // in percentage
     
-    temperature = tempSensor.readTemperature(); // in Celsius
-    humidity = tempSensor.readHumidity(); // in percentage
+    double lvlPlastic,lvlMetal,lvlPaperCarton = 0;
+    int statusPlastic,statusMetal,statusPaperCarton = 0;
+    
+    modf(read_level_median(TRIG_PIN_0,ECHO_PIN_0),&lvlPlastic); //inches int part
+    delayMicroseconds(20);
+    modf(read_level_median(TRIG_PIN_1,ECHO_PIN_1),&lvlMetal); //inches int part
+    delayMicroseconds(20);
+    modf(read_level_median(TRIG_PIN_2,ECHO_PIN_2),&lvlPaperCarton); //inches int part
+    delayMicroseconds(20);
 
-    DebugSerial.println(lvlPlastic);
-    DebugSerial.println(lvlMetal);
-    DebugSerial.println(lvlPaperCarton);
+    //Conditions para evitar valores incoherentes negativos por medida mayor a la altura maxima.
+    if(lvlPlastic > 19){
+      lvlPlastic = 19;
+    }
+    if(lvlPlastic < 4){
+      lvlPlastic = 4;
+    }
+    if(lvlMetal > 19){
+      lvlMetal = 19;
+    }
+    if(lvlMetal < 4){
+      lvlMetal = 4;
+    }
+    if(lvlPaperCarton > 19){
+      lvlPaperCarton = 19;
+    } 
+    if(lvlPaperCarton < 4){
+      lvlPaperCarton = 4;
+    }      
+
+    //Calculate percent of level
+    int lvl_percent_Plastic = int(((H - lvlPlastic)/h)*100); 
+    int lvl_percent_Metal = int(((H - lvlMetal)/h)*100);
+    int lvl_percent_PaperCarton = int(((H - lvlPaperCarton)/h)*100);
+
+    //Conditions to update status
+    if (lvl_percent_Plastic >= 80 && lvl_percent_Plastic <= 95){
+      statusPlastic = 1; //Full
+    } else if (lvl_percent_Plastic > 95) {
+      statusPlastic = 2; //Overflow
+    } else {
+      statusPlastic = 0; //Normal
+    }
+
+    if (lvl_percent_Metal >= 80 && lvl_percent_Metal <= 95){
+      statusMetal = 1; //Full
+    } else if (lvl_percent_Metal > 95) {
+      statusMetal = 2; //Overflow
+    } else {
+      statusMetal = 0; //Normal
+    }
+
+    if (lvl_percent_PaperCarton >= 80 && lvl_percent_PaperCarton <= 95){
+      statusPaperCarton = 1; //Full
+    } else if (lvl_percent_PaperCarton > 95) {
+      statusPaperCarton = 2; //Overflow
+    } else {
+      statusPaperCarton = 0; //Normal
+    }
+    DebugSerial.println(statusPlastic);
+    DebugSerial.println(lvl_percent_Plastic);
+    DebugSerial.println(statusMetal);
+    DebugSerial.println(lvl_percent_Metal);
+    DebugSerial.println(statusPaperCarton);
+    DebugSerial.println(lvl_percent_PaperCarton);
+    
     DebugSerial.println(temperature);
     DebugSerial.println(humidity);
     DebugSerial.println("--------------\n");
 
     //Load on variable buffer formatted sensor data(Strings)
-    sprintf(buffer,"%04d%04d%04d%04d%04d",(int)(temperature*100),(int)(humidity*100),(int)(lvlPlastic*100),(int)(lvlMetal*100),(int)(lvlPaperCarton*100));
+    sprintf(buffer,"%04d%04d%02d%02d%02d%01d%01d%01d",(int)(temperature*100),(int)(humidity*100),lvl_percent_Plastic,lvl_percent_Metal,lvl_percent_PaperCarton,statusPlastic,statusMetal,statusPaperCarton);
       
     //Encode Buffer in HexString
     int len = strlen(buffer);
@@ -127,30 +173,15 @@ void loop()
         String ret = rak811LoRa.rk_recvData();
         if(ret != NULL){ 
           DebugSerial.println(ret);
-        }
-        //rak811LoRa.rk_sleep(1);  //Set RAK811 enter sleep mode
-   //     delay(3000);  //10 seconds to repeat  measurements again    
+        }   
     }
-    
 
-  delay(15000);
+  delay(30000);
   
-   
-   
 } //End Infinity Loop
 
 
 /****************** FUNCTIONS ***********************/
-float read_level_median(int TRIG_PIN, int ECHO_PIN){
-  float sum_measure = 0.00;
-  float distance [20] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
-  for (int i = 0; i<20; i++){
-      distance[i] = readDistance(TRIG_PIN,ECHO_PIN); // in Inches
-      sum_measure += distance[i];  
-      delay(10);
-    }
-    return float(sum_measure/20);
-}
 
 bool InitLoRaWAN(void)
 {
@@ -220,20 +251,16 @@ float readDistance(int TRIG_PIN, int ECHO_PIN){
     return float(duration/2/74);   // convert echo time to distance (inches)
 }
 
-
-/*void readGPS(){
- while (uartGps.available() > 0){
-    gps.encode(uartGps.read());
-    if (gps.location.isUpdated()){
-      Serial.print("Latitude= "); 
-      Serial.print(gps.location.lat(), 6);
-      Serial.print(" Longitude= "); 
-      Serial.println(gps.location.lng(), 6);
-      uartGps.flush();
+float read_level_median(int TRIG_PIN, int ECHO_PIN){
+  float sum_measure = 0.00;
+  for (int i = 0; i<20; i++){
+      sum_measure += readDistance(TRIG_PIN,ECHO_PIN); // in Inches  
+      delay(10);
     }
- } 
-}    
-*/
+    return (sum_measure/20);
+}
+
+// Use to test serial communication between esp32 and lora module.
 /*
    if(uartRak.available()){
     DebugSerial.write(uartRak.read());

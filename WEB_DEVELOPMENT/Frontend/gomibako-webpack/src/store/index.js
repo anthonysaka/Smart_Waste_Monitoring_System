@@ -10,7 +10,8 @@ export default new Vuex.Store({
   state: {
     status: '',
     token: localStorage.getItem('token') || '',
-    user : localStorage.getItem('userdata') || {'default':'default'}
+    user : localStorage.getItem('userdata') || {'default':'default'},
+    logged: false
   },
   mutations: {
     auth_request(state){
@@ -19,6 +20,7 @@ export default new Vuex.Store({
     auth_success(state, token, user){
       state.status = 'success'
       state.token = token
+      state.logged = true
       state.user = user
     },
     auth_error(state){
@@ -59,6 +61,7 @@ export default new Vuex.Store({
           localStorage.removeItem('token')
           localStorage.removeItem('userdata')
           console.log("BORRe")
+          this.state.logged = false
           delete axios.defaults.headers.common['Authorization']
           resolve()
         })
@@ -66,6 +69,7 @@ export default new Vuex.Store({
   },
   getters : {
     isLoggedIn: state => !!state.token,
+    islogged: state => state.logged,
     authStatus: state => state.status,
     userLogged: state => state.user,
 

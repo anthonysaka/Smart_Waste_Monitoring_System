@@ -14,15 +14,13 @@
               </b-col>
 
               <b-col cols="5">
-                   <b-tabs content-class="mt-3" justified>
-                    <b-tab title="Basureros">
                         <div class="card ">
                             <div class="card-header">
                                 <h5 class="h5 text-gray-800"><strong>Lista Basureros </strong></h5>
                             </div>   
                             <div class="card-body py-0 px-0">
                                 <b-table responsive="md sm" borderless sticky-header striped hover :items="items" :fields="fields" head-variant="light" selectable select-mode="multi" @row-selected="onRowSelectedBin">
-
+                        
                                     <!-- Example scoped slot for select state illustrative purposes -->
                                     <template #cell(selected)="{ rowSelected }">
                                     <template v-if="rowSelected">
@@ -38,35 +36,8 @@
                                 </b-table>
                             </div>
                         </div>
-                        <b-button @click="getDirectionsSmartRoutes" variant="primary">Primary</b-button>
-                    </b-tab>
-
-                     <b-tab title="Camiones">
-                         <div class="card ">
-                            <div class="card-header">
-                                <h5 class="h5 text-gray-800"><strong>Lista Basureros </strong></h5>
-                            </div>   
-                            <div class="card-body py-0 px-0">
-                                <b-table responsive="md sm" borderless sticky-header striped hover :items="itemsTruck" :fields="fieldsTruck" head-variant="light" selectable
-                                    select-mode="multi" @row-selected="onRowSelectedTruck">
-
-                                    <template #cell(selected)="{ rowSelected }">
-                                    <template v-if="rowSelected">
-                                        <span aria-hidden="true">&check;</span>
-                                        <span class="sr-only">Selected</span>
-                                    </template>
-                                    <template v-else>
-                                        <span aria-hidden="true">&nbsp;</span>
-                                        <span class="sr-only">Not selected</span>
-                                    </template>
-                                    </template>
-
-                                </b-table>
-                            </div>
-                        </div>
-                    </b-tab>
-
-                   </b-tabs>
+                        <b-button class="mt-4" @click="getDirectionsSmartRoutes" variant="primary">Modo Manual</b-button>
+                
                   
               </b-col>
           </b-row>
@@ -487,7 +458,8 @@ export default {
                         this.items.push(row);
                     }else{
                         //falta agregar el volumen, pensar como hacerlo.
-                        let lvl = ((res1.data.data_sensor.lvlPlastic + res1.data.data_sensor.lvlPaper + res1.data.data_sensor.lvlMedal)/3);
+                        
+                        let lvl = (String(res1.data.data_sensor.lvlPlastic) + "-" + String(res1.data.data_sensor.lvlMedal) + "-" + String(res1.data.data_sensor.lvlPaper));
                         let row = {name:res.data[i].name,level:lvl,location:res.data[i].coordinates}
                         this.items.push(row);
                     }
@@ -535,7 +507,6 @@ export default {
     mounted(){     
         
         this.initmap();
-        
         this.loadAvailableBins();
         this.loadAvailableTrucks();
 
