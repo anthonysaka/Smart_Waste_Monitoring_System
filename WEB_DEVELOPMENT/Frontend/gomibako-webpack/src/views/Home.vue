@@ -4,72 +4,93 @@
     <b-row class="mb-4">
 
       <b-col cols="12" md="3">
+        <h5 class="h5 text-gray-800 py-2 " style="display: flex;justify-content: center;"><strong>ESTADO DE LOS BASUREROS </strong></h5>
 
-        <b-row>
-          <b-col cols="12">
+        <b-row class="mt-2 px-4" >
+          <b-col cols="12" style="display: flex;justify-content: center;">
             <div class="card  shadow" style="height: 6rem; width: 80%">
-                <div class="card-body">
-                  <div class="row no-gutters align-items-center">
-                    <div class="col mr-1">
-                      <div class="d-flex flex-column">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Activos</div>
-                      </div>
-                      <div class="d-flex flex-column">
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">DATO</div>
-                      </div>
-                    </div>
-                    <div class="col-auto">
-                      <i class="fas fa-trash fa-2x text-success"></i>
-                    </div>
-                  </div>
+            <div class="minicard  h-10 py-1 ml-2 mr-2">
+              <div class="card-body" style="height: 10vh;">
+                <div class="d-flex flex-column">
+                  <div class="text-s font-weight-bold text-center mt-n3 text-primary text-uppercase mb-1">
+                    <strong>NORMAL [< 80]</strong></div>
                 </div>
+                <b-row>
+                  <b-col cols="6">
+                    <div class="d-flex flex-column text-center">
+                      <i class="fas fa-trash-alt fa-2x text-primary"></i>
+                    </div>
+                  </b-col>
+                  <b-col cols="6">
+                    <div class="h4 mb-0 text-center mt-2 font-weight-bold text-gray-800">
+                      <b-badge variant="primary">{{amountNormal}}</b-badge>
+                    </div>
+                  </b-col>
+
+                </b-row>
               </div>
+            </div>
+            </div>
           </b-col>
         </b-row>
 
-        <b-row>
-          <b-col cols="12">
+        <b-row class="mt-2 px-4">
+          <b-col cols="12" style="display: flex;justify-content: center;">
             <div class="card  shadow" style="height: 6rem; width: 80%">
-                <div class="card-body">
-                  <div class="row no-gutters align-items-center">
-                    <div class="col mr-1">
-                      <div class="d-flex flex-column">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Activos</div>
-                      </div>
-                      <div class="d-flex flex-column">
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">DATO</div>
-                      </div>
-                    </div>
-                    <div class="col-auto">
-                      <i class="fas fa-trash fa-2x text-success"></i>
-                    </div>
-                  </div>
+            <div class="minicard  h-10 py-1 ml-2 mr-2">
+              <div class="card-body" style="height: 10vh;">
+                <div class="d-flex flex-column">
+                  <div class="text-s font-weight-bold text-center mt-n3 text-warning text-uppercase mb-1">
+                    <strong>FULL [80-95]</strong></div>
                 </div>
+                <b-row>
+                  <b-col cols="6">
+                    <div class="d-flex flex-column text-center">
+                      <i class="fas fa-trash-alt fa-2x text-warning"></i>
+                    </div>
+                  </b-col>
+                  <b-col cols="6">
+                    <div class="h4 mb-0 text-center mt-2 font-weight-bold text-gray-800">
+                      <b-badge variant="warning">{{amountFull}}</b-badge>
+                    </div>
+                  </b-col>
+
+                </b-row>
               </div>
+            </div>
+            </div>
           </b-col>
         </b-row>
 
-        <b-row>
-          <b-col cols="12">
+        <b-row class="mt-2 px-4">
+          <b-col cols="12" style="display: flex;justify-content: center;">
             <div class="card  shadow" style="height: 6rem; width: 80%">
-                <div class="card-body">
-                  <div class="row no-gutters align-items-center">
-                    <div class="col mr-1">
-                      <div class="d-flex flex-column">
-                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Activos</div>
-                      </div>
-                      <div class="d-flex flex-column">
-                        <div class="h5 mb-0 font-weight-bold text-gray-800">DATO</div>
-                      </div>
-                    </div>
-                    <div class="col-auto">
-                      <i class="fas fa-trash fa-2x text-success"></i>
-                    </div>
-                  </div>
+            <div class="minicard  h-10 py-1 ml-2 mr-2">
+              <div class="card-body" style="height: 10vh;">
+                <div class="d-flex flex-column">
+                  <div class="text-s font-weight-bold text-center mt-n3 text-danger text-uppercase mb-1">
+                    <strong>OVERLOAD [> 95]</strong></div>
                 </div>
+                <b-row>
+                  <b-col cols="6">
+                    <div class="d-flex flex-column text-center">
+                      <i class="fas fa-trash-alt fa-2x text-danger"></i>
+                    </div>
+                  </b-col>
+                  <b-col cols="6">
+                    <div class="h4 mb-0 text-center mt-2 font-weight-bold text-gray-800">
+                      <b-badge variant="danger">{{amountOverload}}</b-badge>
+                    </div>
+                  </b-col>
+
+                </b-row>
               </div>
+            </div>
+            </div>
           </b-col>
         </b-row>
+
+        
 
       </b-col>
       
@@ -105,10 +126,13 @@
         accessToken: 'pk.eyJ1IjoiYW50aG9ueXNha2EiLCJhIjoiY2tnbjBrZWR4MGkwNDJ0cGczb2UxNTE4YiJ9.WsEmhirejFVApuNz9Ivtlw',
         userlogged: JSON.parse(localStorage.getItem('userdata')),
         geoJson: null,
+        amountNormal: 0, 
+        amountFull: 0, 
+        amountOverload: 0,
       };
     },
     methods: {
-      async loadAvailableBins() {
+      async loadAvailableBinsOnMap() {
         try {
           console.log(this.userlogged.rnc_compa)
           var res = null;
@@ -177,11 +201,32 @@
             zoom: 12,
           });
         }
-      }
+      },
+      async loadDataResumeCardsDashboard(){
+            try {
+                console.log(this.userlogged.rnc_compa)
+                var res = await axios.get(`${API_URL}/dustbin/1`,{ params: {rncComp: this.userlogged.rnc_compa}});
+
+                for (var i = 0; i < res.data.length; i++) {
+                   if (res.data[i].status == 0) {
+                     this.amountNormal++;
+                   } else if (res.data[i].status == 1) {
+                     this.amountFull++;
+                   } else{
+                     this.amountOverload++;
+                   }
+
+                }
+                console.log(res.status)
+            } catch (error) {
+                console.log(error)
+            }
+        },
       },
       mounted() {
         this.$emit('childToParent', this.userlogged)
-        this.loadAvailableBins();
+        this.loadAvailableBinsOnMap();
+        this.loadDataResumeCardsDashboard();
         this.userlogged = JSON.parse(localStorage.getItem('userdata'));
 
         if (this.userlogged.default_credentials == true) {
@@ -218,20 +263,31 @@
             },
           ]).then(async (result) => {
             if (result.value) {
-              const res = await axios.put(`${API_URL}/changecredentials`, {
+              try {
+                const res = await axios.put(`${API_URL}/changecredentials`, {
                 "id": this.userlogged.id,
                 "newusername": result.value[1],
                 "newpassword": result.value[2]
               })
-              const username = result.value[1]
-              const password = result.value[2]
-              const res1 = await axios.post(`${API_URL}/login`, {
-                username,
-                password
-              })
-              localStorage.setItem('userdata', JSON.stringify(res1.data.user[0]))
-              this.userlogged = JSON.parse(localStorage.getItem('userdata')),
-                console.log(res);
+                
+              } catch (error) {
+                Swal.fire(
+                  "usuario ya existe",
+                  "",
+                  "error"
+                )
+              }
+                const username = result.value[1]
+                const password = result.value[2]
+                const res1 = await axios.post(`${API_URL}/login`, {
+                    username,
+                    password
+                  })
+                localStorage.setItem('userdata', JSON.stringify(res1.data.user[0]))
+                this.userlogged = JSON.parse(localStorage.getItem('userdata'))
+              
+            
+              
             }
           })
         }

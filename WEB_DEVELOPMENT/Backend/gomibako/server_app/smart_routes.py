@@ -101,7 +101,7 @@ def generate_smart_routes(distanceMatrix,demands,truckCapacities,truckAmount):
 
     search_parameters = pywrapcp.DefaultRoutingSearchParameters()
     search_parameters.local_search_metaheuristic = (routing_enums_pb2.LocalSearchMetaheuristic.GUIDED_LOCAL_SEARCH)
-    search_parameters.time_limit.seconds = 20
+    search_parameters.time_limit.seconds = 10
     search_parameters.log_search = True
 
      # Solve the problem.
@@ -110,5 +110,6 @@ def generate_smart_routes(distanceMatrix,demands,truckCapacities,truckAmount):
     # Print solution on console.
     if solution:
         solucion = print_solution(data, manager, routing, solution)
-
         return solucion
+    else:
+        return None

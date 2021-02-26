@@ -53,20 +53,7 @@
       <div id="content-wrapper" class="container-fluid">
         <!-- Top NavBar-->
         <nav class="navbar sticky-top navbar-expand-lg shadow" v-if="isLoggedIn">
-          <!--           <button type="button" id="sidebarToggleTop" class="btn btn-info">
-            <i class="fas fa-align-justify"></i>
-          </button> -->
-          <!-- Topbar Search -->
-         <!--  <form class="d-none d-sm-inline-block form-inline  ml-md-3 my-2 my-md-0 mw-100 navbar-search">
-            <div class="input-group">
-              <input type="text" class="form-control bg-light" placeholder="Search for..." aria-label="Search">
-              <div class="input-group-append">
-                <button class="btn btn-primary"  type="button">
-                  <i class="fas fa-search fa-sm"></i>
-                </button>
-              </div>
-            </div>
-          </form> -->
+          
          <!--  <a class="navbar-brand clearfix mb-2 ml-auto" href="/"><img src="@/assets/img/gomibako_logo_text.png"
               alt="Logo" title="Logo" /></a> -->
           <ul class="navbar-nav ml-auto">
@@ -99,11 +86,15 @@
 </template>
 
 <script>
+import io from 'socket.io-client';
+var socket = io.connect("http://localhost:5000")
+import Swal from 'sweetalert2';
 
 export default {
   data(){
     return{
-      userlogged: ''
+      userlogged: '',
+      count: 0,
     }
   },
   computed : {
@@ -119,7 +110,35 @@ export default {
       onChildClick (value) {
         console.log(value)
         this.userlogged = value
-    }
+      },
+      showToast(data) {
+    
+        if (data.code == '1'){
+          Swal.fire({
+            position: 'top-end',
+            icon: 'warning',
+            title: 'FULL',
+            text: data.devName,
+            showConfirmButton: false,
+            toast: true,
+            timer: 5000
+          })
+          
+        } else {
+          Swal.fire({
+            position: 'top-end',
+            icon: 'error',
+            title: 'OVERLOAD',
+            text: data.devName,
+            showConfirmButton: false,
+            toast: true,
+            timer: 5000
+          })
+          
+        }
+        
+      }
+
     },
     created: function () {
     this.$http.interceptors.response.use(undefined, function (err) {
@@ -130,6 +149,11 @@ export default {
         throw err;
       });
     });
+
+    socket.on("mqtt_message", fetchedData => {
+                    var data = JSON.parse(fetchedData)
+                    this.showToast(data)
+                })
     
   },
 

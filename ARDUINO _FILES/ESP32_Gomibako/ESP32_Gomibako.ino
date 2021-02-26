@@ -10,6 +10,8 @@
 #include "DHT.h"
 #include "RAK811.h"
 #include <math.h>       /* modf */
+#include "ESP32Time.h"
+
 
 /********** Defines Constants Sensors **********/
 #define TRIG_PIN_0   18          // HC-SR04 trigger pin
@@ -21,18 +23,13 @@
 #define TRIG_PIN_2   32          // HC-SR04 trigger pin
 #define ECHO_PIN_2   33          // HC-SR04 echo pin
 
-#define H  19// Altura del basurero en pulgadas.
-#define h  15 // Altura del basurero en pulgadas.
-
-
-#define TX_GPS_PIN 1
-#define RX_GPS_PIN 3
-#define BAUD_RATE_GPS 115200
-
 #define DHT_PIN   5 // DHT-22 Temperature Sensor data pin
 #define DHTTYPE DHT22
 
 #define DebugSerial Serial
+
+#define H  19// Altura del basurero en pulgadas.
+#define h  15 // Altura del basurero en pulgadas.
 
 /********** Defines Constants LoRa/LoRaWAN **********/
 #define TX_TO_LORA_PIN 17
@@ -57,7 +54,11 @@ void setupRAK811Node(void);
 
 /***** Global Variables ******/
 char buffer[242];
-
+String dataBackup[8];
+int count=0;
+int flag_count = 0;
+int flag_data_to_send = 0;
+ESP32Time rtc;
 
 /********** BEGIN SETUP **********/
 void setup()
@@ -74,6 +75,9 @@ void setup()
   pinMode(ECHO_PIN_2, INPUT); //Echo pin as input
 
   setupRAK811Node();
+
+  rtc.setTime(0, 9, 23, 25, 2, 2021);
+  
  
   delay(2000); //Time to init the system
 }
@@ -84,7 +88,7 @@ void loop()
     float humidity = tempSensor.readHumidity(); // in percentage
     
     double lvlPlastic,lvlMetal,lvlPaperCarton = 0;
-    int statusPlastic,statusMetal,statusPaperCarton = 0;
+    int statusPlastic,statusMetal,statusPaperCarton,statusGeneral= 0;
     
     modf(read_level_median(TRIG_PIN_0,ECHO_PIN_0),&lvlPlastic); //inches int part
     delayMicroseconds(20);
@@ -118,6 +122,9 @@ void loop()
     int lvl_percent_Metal = int(((H - lvlMetal)/h)*100);
     int lvl_percent_PaperCarton = int(((H - lvlPaperCarton)/h)*100);
 
+    float volumen = (float)(((lvl_percent_Plastic/100.00)*14.90)*(18.11)*(9.45)) + (float)(((lvl_percent_Metal/100.00)*14.90)*(18.11)*(9.45)) + (float)(((lvl_percent_PaperCarton/100.00)*14.90)*(18.11)*(9.45));
+    
+
     //Conditions to update status
     if (lvl_percent_Plastic >= 80 && lvl_percent_Plastic <= 95){
       statusPlastic = 1; //Full
@@ -142,19 +149,31 @@ void loop()
     } else {
       statusPaperCarton = 0; //Normal
     }
+
+    if (statusPlastic == 2 || statusMetal == 2 || statusPaperCarton == 2){
+      statusGeneral = 2;
+    }
+    if(statusPlastic == 1 || statusMetal == 1 || statusPaperCarton == 1){
+      statusGeneral = 1;
+    }
+
+    
     DebugSerial.println(statusPlastic);
     DebugSerial.println(lvl_percent_Plastic);
     DebugSerial.println(statusMetal);
     DebugSerial.println(lvl_percent_Metal);
     DebugSerial.println(statusPaperCarton);
     DebugSerial.println(lvl_percent_PaperCarton);
+    DebugSerial.println(statusGeneral);
     
     DebugSerial.println(temperature);
     DebugSerial.println(humidity);
+    DebugSerial.println(volumen);
     DebugSerial.println("--------------\n");
+    DebugSerial.println(rtc.getTimeDate());
 
     //Load on variable buffer formatted sensor data(Strings)
-    sprintf(buffer,"%04d%04d%02d%02d%02d%01d%01d%01d",(int)(temperature*100),(int)(humidity*100),lvl_percent_Plastic,lvl_percent_Metal,lvl_percent_PaperCarton,statusPlastic,statusMetal,statusPaperCarton);
+    sprintf(buffer,"%04d%04d%02d%02d%02d%01d%01d%01d%01d%06d",(int)(temperature*100),(int)(humidity*100),lvl_percent_Plastic,lvl_percent_Metal,lvl_percent_PaperCarton,statusPlastic,statusMetal,statusPaperCarton,statusGeneral,(int)(volumen*100));
       
     //Encode Buffer in HexString
     int len = strlen(buffer);
@@ -163,20 +182,58 @@ void loop()
    
     printf("UTF-8: %s\n", buffer);
     printf("Hexadecimal: %s\n", hex_str);
+   
 
-    //Wakeup RAK811 from sleep mode
-    //rak811LoRa.rk_sleep(0);  
-    //delay(1000);
 
     //Send Data to LoRa Gateway  
-    if (rak811LoRa.rk_sendData(1, hex_str)){    
+    if (rak811LoRa.rk_sendData(1, hex_str)){  
+        delay(500);
         String ret = rak811LoRa.rk_recvData();
         if(ret != NULL){ 
           DebugSerial.println(ret);
-        }   
+          DebugSerial.println("ACK RECIBIDO!");
+
+          if (flag_data_to_send == 1) {
+           
+              if(dataBackup[flag_count] != NULL){
+                 char aux[(len*2)+7];
+                 dataBackup[flag_count].toCharArray(aux,(len*2)+7);
+                 
+                 if(rak811LoRa.rk_sendData(2, aux)){
+                    delay(500);
+                     DebugSerial.println("TRYING SEND LOG DATA");
+                    String ret = rak811LoRa.rk_recvData();
+                    
+                    if(ret != NULL){ 
+                      DebugSerial.println(ret);
+                      printf("ACK RECIBIDO! - DATA LOG [%d] OK!\n",flag_count);
+                      printf("LOG DATA: %s\n\n", aux);
+                    }
+                 }
+              }
+              flag_count++;
+              
+              if(flag_count == count){
+                 flag_data_to_send = 0; 
+                 count=0;
+                 flag_count=0;
+            } 
+         
+          }
+        } else {
+          DebugSerial.println("ACK NO RECIBIDO!");
+          DebugSerial.println("SAVING DATA TO SEND LATER");
+          char x [] = {"4C4F47"};
+          strcat(hex_str,x);
+          dataBackup[count]= hex_str;
+          DebugSerial.println(dataBackup[count]);
+          count++;
+          DebugSerial.println("DATA SAVED TO SEND LATER");
+          flag_data_to_send = 1;          
+        }
     }
 
-  delay(30000);
+  delay(20000);
   
 } //End Infinity Loop
 
@@ -220,7 +277,7 @@ void setupRAK811Node(){
   }
   DebugSerial.println(F("Join LoRaWAN success"));
 
-  if(!rak811LoRa.rk_isConfirm(0))  //set LoRa data send package type:0->unconfirm, 1->confirm
+  if(!rak811LoRa.rk_isConfirm(1))  //set LoRa data send package type:0->unconfirm, 1->confirm
   {
     DebugSerial.println(F("LoRa data send package set error,please reset module.")); 
     while(1);    

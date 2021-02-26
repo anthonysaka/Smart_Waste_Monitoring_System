@@ -1,35 +1,45 @@
 <template>
   <div class="login">
-    <b-container class="w-50">
-      <div class="card px-5 py-5">
 
-        <h4 class="mt-4"> LOGIN </h4>
-        <hr class="line">
+    <div class="limiter">
+      <div class="container-login100">
+        <div class="wrap-login100">
+          <div class="login100-pic js-tilt" data-tilt>
+            <img src="../assets/img/Logo_Gomibako_Blue.png" alt="IMG">
+          </div>
 
-        <b-form @submit.prevent="login">
-        <b-form-group label="Username:" label-for="inputUserName">
-          <b-form-input class="w-50" id="inputUserName" v-model="username"  required placeholder="Ej.: Juan">
-          </b-form-input>
-        </b-form-group>
 
-        <b-form-group label="Password:" label-for="inputUserPassword">
-          <b-form-input class="w-50" id="inputUserPassword" type="password" v-model="password" required placeholder="Ej.: Juan">
-          </b-form-input>
-        </b-form-group>
+          <b-form @submit.prevent="login" class="login100-form validate-form">
+           
+            <div class="card-body mb-4" style="display: flex;justify-content: center;">
+              <h5 class="h5 text-gray-800 my-0"><strong> SISTEMA GOMIBAKO </strong></h5>
+            </div>
+         
 
-         <b-button class="mr-2" type="submit" variant="primary">Aplicar</b-button>
+            
+              <b-form-group class="wrap-input100 validate-input" label="USUARIO:" label-for="inputUserName">
+                <b-form-input class="input100" id="inputUserName" v-model="username" required placeholder="usuario">
+                </b-form-input>
+              </b-form-group>
+            
 
-      
-      </b-form>
+    
+              <b-form-group label="CONTRASENA:" label-for="inputUserPassword">
+                <b-form-input class="input100" id="inputUserPassword" type="password" v-model="password" required
+                  placeholder="contrasena">
+                </b-form-input>
+              </b-form-group>
+  
 
+            <div class="container-login100-form-btn">
+              <b-button class="login100-form-btn" type="submit" variant="primary">ENTRAR</b-button>
+            </div>
+          </b-form>
+        </div>
       </div>
-      
-      
-    </b-container>
+    </div>
 
 
-
-      
   </div>
 </template>
 
@@ -61,6 +71,7 @@ export default {
 }
 </script>
 
-<style>
+<style >
+ 
 
 </style>

@@ -3,8 +3,51 @@
       <b-container fluid>
           <b-tabs content-class="mt-3" justified>
 
+            <b-tab title="Camiones" active>
+                <b-jumbotron class="jumbotron">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                        <h5 class="h5 text-gray-800 my-0"><strong> LISTADO DE CAMIONES</strong></h5>
+                        </div>
+                    </div>
+
+
+                    <b-container style="display: flex;justify-content: center;">
+                        <b-input-group size="md" class="mb-4 w-50">
+                        <b-form-input v-model="filter" type="search" id="filterInput" placeholder="Escribe para buscar"></b-form-input>
+                        </b-input-group>
+
+                    </b-container>
+                    
+
+                    <b-col cols="12">
+                    <div class="card">
+                        <div class="card-body">
+                            <b-table responsive="sm" borderless hover :items="itemsTruck" :fields="fieldsTruck" head-variant="light" selectable
+                                select-mode="single" @row-selected="onRowSelectedTruck" :filter="filter"
+                                :filter-included-fields="filterOn">
+
+                                <!-- Example scoped slot for select state illustrative purposes -->
+                                <template #cell(selected)="{ rowSelected }">
+                                <template v-if="rowSelected">
+                                    <span aria-hidden="true">&check;</span>
+                                    <span class="sr-only">Selected</span>
+                                </template>
+                                <template v-else>
+                                    <span aria-hidden="true">&nbsp;</span>
+                                    <span class="sr-only">Not selected</span>
+                                </template>
+                                </template>
+
+                            </b-table>
+                        </div>
+                    </div>
+                    </b-col>
+                </b-jumbotron>
+            </b-tab>
+
             <b-tab title="[+] Camiones">
-                <b-container @submit="addTruck">
+                <b-container @submit.prevent="addTruck">
                     <b-form>
                         <h4 class="mt-4"> INFORMACION GENERAL</h4>
                         <hr class="line">
@@ -36,26 +79,25 @@
                         <hr class="line">
                         <b-row class="mb-4">
                             <b-col cols="6">
-                                <b-form-group label="Capacidad de carga(Kg):" label-for="inputPlaca">
-                                    <b-input id="inputPlaca" v-model="cap_kg" required placeholder="Ej.:A543215"></b-input>
+                                <b-form-group label="Capacidad de carga(Kg):" label-for="inputCarga">
+                                    <b-input id="inputCarga" v-model="cap_kg" required placeholder="Ej.:400"></b-input>
                                 </b-form-group>
                             </b-col>
                             <b-col cols="6">
-                                <b-form-group label="Capacidad de volumen (m^3):" label-for="inputPlaca">
-                                    <b-input id="inputPlaca" v-model="cap_vol" required placeholder="Ej.:A543215"></b-input>
+                                <b-form-group label="Capacidad de volumen (pulg^3):" label-for="inputVol">
+                                    <b-input id="inputVol" v-model="cap_vol" required placeholder="Ej.:10000"></b-input>
                                 </b-form-group>
                             </b-col>
                         </b-row>
                         
                     <b-button class="mr-2" type="submit" variant="primary">Registrar</b-button>
-                    <b-button variant="danger">Cancelar</b-button>
+                    <b-button @click="onReset" variant="danger">Cancelar</b-button>
                     
                     </b-form>
                 </b-container>
             </b-tab>
 
-            <b-tab title="Camiones">
-            </b-tab>
+            
           </b-tabs>
 
       </b-container>
@@ -65,6 +107,7 @@
 <script>
 import axios from 'axios';
 const API_URL = process.env.API_URL;
+import Swal from 'sweetalert2';
 export default {
     data(){
         return{
@@ -75,6 +118,59 @@ export default {
             modelo:null,
             cap_kg:null,
             cap_vol:null,
+
+            fieldsTruck: [
+                {
+                    key: 'selected',
+                    label: '[*]',
+                    sortable: true
+                }, 
+                {
+                    key: 'code',
+                    label: 'CODE',
+                    sortable: true
+                },
+                {
+                    key: 'placa',
+                    label: 'PLACA',
+                    sortable: true,
+                },
+                {
+                    key: 'year',
+                    label: 'A\u00D1O',
+                    sortable: true,
+                },
+                {
+                    key: 'marca',
+                    label: 'MARCA',
+                    sortable: true,
+                },
+                {
+                    key: 'modelo',
+                    label: 'MODELO',
+                    sortable: true,
+                },
+                {
+                    key: 'capVol',
+                    label: 'CAPACIDAD VOLUMENTRICA [pulg^3]',
+                    sortable: true,
+                },
+                {
+                    key: 'capPeso',
+                    label: 'CAPACIDAD PESO[kg]',
+                    sortable: true,
+                },
+                {
+                    key: 'date',
+                    label: 'Fecha registro',
+                    sortable: true,
+                },
+            ],
+            itemsTruck:[],
+            selectedTableTruck: null,
+
+            filter: null,
+            filterOn:[],
 
         }
     },
@@ -93,12 +189,51 @@ export default {
                                             });
 
                 console.log(res.status)
+                Swal.fire(
+                    'Registrado con exito!',
+                    '',
+                    'success'
+                )
+            } catch (error) {
+                Swal.fire(
+                    'Uups, ha ocurrido un error!',
+                    '',
+                    'error'
+                )
+                console.log(error)
+            }
+            
+        },
+        onReset(){
+            this.placa = ""
+            this.ano = ""
+            this.marca = ""
+            this.modelo = ""
+            this.cap_kg = ""
+            this.cap_vol = ""        
+        },
+        onRowSelectedTruck(items) {
+            this.selectedTableTruck = items;
+        },
+        async loadAvailableTrucks(){
+            try {
+                var res = await axios.get(`${API_URL}/truck`,{ params: {rncComp: this.userlogged.rnc_compa}});
+
+               for (var i = 0; i < res.data.length; i++) {      
+                    let row = {code:res.data[i].code,placa:res.data[i].placa,year:res.data[i].ano,marca:res.data[i].marca,modelo:res.data[i].modelo,capVol:res.data[i].cap_carga_vol,capPeso:res.data[i].cap_carga_kg,date:res.data[i].created_date}
+                    this.itemsTruck.push(row);
+                }
+                console.log(res.status)
             } catch (error) {
                 console.log(error)
             }
             
         },
     },
+    mounted(){
+        this.$emit('childToParent', this.userlogged)
+         this.loadAvailableTrucks();
+    }
 
 }
 </script>

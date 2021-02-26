@@ -6,7 +6,8 @@
 #! ################################################################# # 
 
 #! System Web Application
- 
+
+import eventlet #Server for test flask-socketio (websocket)
 from flask import Flask, jsonify, json, request, abort
 from flask_mqtt import Mqtt
 from flask_cors import CORS
@@ -19,6 +20,9 @@ from .connectiondb import Connectiondb
 from .methods import MethodsDatabase
 from .smart_routes import *
 from os import environ
+from flask_socketio import SocketIO
+
+eventlet.monkey_patch()
 
 app = Flask(__name__)
 cors = CORS(app, resource={
@@ -32,7 +36,7 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
 app.config['MAIL_USERNAME'] = 'anthonysk2017@gmail.com'
-app.config['MAIL_PASSWORD'] = environ.get('MAIL_PASSWORD')
+app.config['MAIL_PASSWORD'] = 'semeolvido1999'
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 
@@ -54,6 +58,8 @@ if(mqtt):
     mqtt.subscribe('application/11/device/+/rx')
     print("[*] MQTT Suscribed to application/11/device/+/rx OK!\n\n")
 
+socketio = SocketIO(app,cors_allowed_origins="*")
+
 
 #! MQTT Callback Function. When a new message arrives, this
 #! data is stored in the database table (public.dustbinData)
@@ -64,11 +70,19 @@ def handle_mqtt_message(client, userdata, message):
     device_eui = str(dict_data['devEUI'])
     device_name = str(dict_data['deviceName'])
     json_sensor_data = json.dumps(dict_data['object'],indent=4)
+    code = str(dict_data['object']['codeStatus'])
 
     if(MethodsDatabase.save_sensor_data(device_eui,device_name,json_sensor_data,dtime.now())):
         print("[*] Sensor Data Saved OK!\n")
+
+        #Conditions to send notification about status of fill level
+        if code == "1" or code== "2":
+            print("entre")
+            json_alertData =  json.dumps({'code':code,'devName':device_name})
+            socketio.emit('mqtt_message',json_alertData,json=True)
     else:
         print("[*] Sensor Data Saved ERROR!\n")
+
 
 
 #! ***************************************************
@@ -111,7 +125,7 @@ def generator_random_default_username(firstname,lastname):
 #! ENDPOINT ROUTES
 @app.route("/gomibako/internalapi/1.0/clientCompany/<int:loadtype>",methods=['POST','GET'])
 def api_client_company(loadtype):
-    if request.method == 'POST':
+    if request.method == 'POST' and loadtype == 0:
     
         rnc = request.json['rnc']
         name = request.json['name']
@@ -150,7 +164,7 @@ def api_user():
         email = request.json['email']
         firstname = request.json['firstname']
         lastname = request.json['lastname']
-        typeU = "cliente"
+        typeU = "Cliente"
         rncComp = request.json['rncComp']
 
         username = str(generator_random_default_username(firstname,lastname))
@@ -160,7 +174,7 @@ def api_user():
 
         if(MethodsDatabase.add_user(username,email,password,firstname,lastname,typeU,rncComp)):
             msg = Message('GOMIBAKO TEAM - Credentials', sender = 'anthonysk2017@gmail.com', recipients = [str(email)])
-            msg.body = "Hey, este es tu usuario y contrasena por defecto:\n     " +"Usuario: "+username+"\n     "+password + "\nCuando inicie sesion por primera vez, tendra que cambiar el usuario y contrasena.\nSaludos,\nGOMIBAKO TEAM"
+            msg.body = "Hey, este es tu usuario y contrasena por defecto:\n     " +"Usuario: " + username +"\n"  + "     Contrasena: " + password + "\nCuando inicie sesion, se le pedira que cambie el usuario y contrasena.\nSaludos,\nGOMIBAKO TEAM"
             mail.send(msg)
             
             return jsonify({'code':201,'response':"Registrado con exito, usuario y contrasena enviado al emai.",'firstname':firstname, 
@@ -245,7 +259,19 @@ def api_dustbin_data(typeget):
         elif data_all is None:
             return jsonify({'code':404,'response':'No hay datos registrados!'}),404
         else:
-            abort(500,description="Error en la base de datos")        
+            abort(500,description="Error en la base de datos")
+    elif request.method == 'GET' and typeget == 2:
+        namebin = request.args.get('namebin')
+        print(namebin)
+        data_all = MethodsDatabase.get_20_dustbin_data(namebin)
+        #print(data_all)
+
+        if data_all is not None:
+            return jsonify(data_all),200
+        elif data_all is None:
+            return jsonify({'code':404,'response':'No hay datos registrados!'}),404
+        else:
+            abort(500,description="Error en la base de datos")         
 
 @app.route("/gomibako/internalapi/1.0/login",methods=['POST'])
 def login():
@@ -281,7 +307,7 @@ def modify_default_credentials():
             else:
                 abort(500,description="Error en la base de datos")
         elif dbResponse is not None:
-            return jsonify({'code':404,'response':'El usuario ya existe!'}),404
+            return jsonify({'code':409,'response':'El usuario ya existe!'}),409
         else:
             abort(500,description="Error en la base de datos")
       
@@ -326,6 +352,6 @@ def get_smart_routes():
             truck_capacities[x] = int(truck_capacities[x])
 
         solution = generate_smart_routes(distance_matrix,demands,truck_capacities,cant_truck)
-        return jsonify({'code':201,'solution':solution}),201
+        return jsonify({'code':200,'solution':solution}),200
         
 

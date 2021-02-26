@@ -6,10 +6,8 @@ from datetime import datetime
 def generated_data():
     Connectiondb.getConnectionToPostgre()
 
-    device_eui = ['a84041000181eaec','a84041000181eaff','b84041000181eaff','b84041000181eaaa','b84041000181ebbb','b84041000181ebbc']
-    device_name = ['BA000002',          'BA000003',          'BA000004',         'BA000005',    'BA000008',     'BA000009']
-    #device_eui = ['60c5a8fffe798f87']
-    #device_name = ['BA000010']
+    device_eui = ['a84041000181eaec','a84041000181eaff','b84041000181eaff','b84041000181eaaa','b84041000181ebbb','b84041000181ebbc','60c5a8fffe798f87']
+    device_name = ['BA000002',          'BA000003',          'BA000004',         'BA000005',    'BA000008',     'BA000009','BA000010']
     lim = 5.50
     code = 0
     for x in range(5):

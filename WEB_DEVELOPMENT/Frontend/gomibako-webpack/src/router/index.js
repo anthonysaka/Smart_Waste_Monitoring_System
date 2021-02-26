@@ -34,7 +34,8 @@ const routes = [
     component: () => import('../views/DetailBin.vue'),
     meta: {
       requiresAuth: true
-    }
+    },
+    
   },
   {
     path: '/trucks',
@@ -74,6 +75,8 @@ const router = new VueRouter({
   routes
 })
 
+
+
 router.beforeEach((to, from, next) => {
   if(to.matched.some(record => record.meta.requiresAuth)) {
     if (store.getters.isLoggedIn) {
@@ -85,5 +88,6 @@ router.beforeEach((to, from, next) => {
     next()
   }
 })
+
 
 export default router

@@ -185,6 +185,24 @@ class MethodsDatabase:
             print(error)
             return False
 
+    def get_20_dustbin_data(namebin):
+        try:
+            conn = Connectiondb.getConnectionToPostgre()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+            cur.execute('SELECT data_sensor, created_date FROM (SELECT data_sensor, created_date FROM public.dustbindata WHERE device_name = %s ORDER BY created_date DESC LIMIT 20) AS last10values ORDER BY created_date ASC;',(namebin,))
+            result = cur.fetchall()
+
+            if not result:
+                result = None
+        
+            conn.commit()
+            cur.close()
+            conn.close()
+            return result
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False
 
 
     def check_login(username,password):
@@ -253,6 +271,20 @@ class MethodsDatabase:
             cur.close()
             conn.close()
             return result
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False
+
+    def save_notification(title,rncComp,dataJson,date):
+        try:
+            conn = Connectiondb.getConnectionToPostgre()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+            cur.execute('INSERT INTO public.notification(titulo,rnc_compa,data,created_date)VALUES(%s,%s,%s,%s,%s);',(title,rncComp,dataJson,date))
+            conn.commit()
+            cur.close()
+            conn.close()
+            return True
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
             return False

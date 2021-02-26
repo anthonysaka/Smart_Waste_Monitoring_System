@@ -3,15 +3,15 @@
         <b-container>
             <b-tabs content-class="mt-3" justified>
 
-                <b-tab title="Listado">
+                <b-tab title="Listado" active>
 
                 </b-tab>
 
-                <b-tab title="[+] Empresa" active>
+                <b-tab title="[+] Empresa" >
                     <h4 class="mt-4"> INFORMACION EMPRESA </h4>
                     <hr class="line">
 
-                    <b-form @submit="addCompany" v-if="show">
+                    <b-form @submit.prevent="addCompany" v-if="show">
 
                         <b-form-group label="RNC:" label-for="inputRNC">
                             <b-input id="inputRNC" v-model="formCompany.rnc" required placeholder="Ej.:654321">
@@ -37,7 +37,7 @@
                             <h5 id="coordinatesCompa" class="coordinates"><b-badge variant="primary"></b-badge></h5>
                             <div class="card shadow">
                                 <div class="card-body">
-                                    <div id="mapCompa" style="height: 250px;
+                                    <div id="mapCompa" style="height: 350px;
                                 width: 100%;"></div>
                                 </div>
                             </div>
@@ -45,7 +45,7 @@
                         </b-form-group>
 
                         <b-button class="mr-2" type="submit" variant="primary">Registrar</b-button>
-                        <b-button variant="danger">Cancelar</b-button>
+                        <b-button @click="onResetCompany" variant="danger">Cancelar</b-button>
                     </b-form>
                 </b-tab>
 
@@ -53,7 +53,7 @@
                     <h4 class="mt-4"> INFORMACION USUARIO </h4>
                     <hr class="line">
 
-                    <b-form @submit="addUser" v-if="show">
+                    <b-form @submit.prevent="addUser" v-if="show">
                         <b-form-group label="Primer nombre:" label-for="inputUserName">
                             <b-form-input id="inputUserName" v-model="formUser.firstname" required placeholder="Ej.: Juan">
                             </b-form-input>
@@ -74,7 +74,7 @@
                         </b-form-group>
 
                         <b-button class="mr-2" type="submit" variant="primary">Aplicar</b-button>
-                        <b-button variant="danger">Cancelar</b-button>
+                        <b-button @click="onResetUser" variant="danger">Cancelar</b-button>
                     </b-form>
                 </b-tab>
 
@@ -82,7 +82,7 @@
                     <h4 class="mt-4"> INFORMACION BASURERO </h4>
                     <hr class="line">
 
-                    <b-form @submit="addBasurero" v-if="show">                       
+                    <b-form @submit.prevent="addBasurero" v-if="show">                       
                         
                         <b-form-group label="DeviceEUI:" label-for="inputDeviceEUI">
                             <b-form-input id="inputDeviceEUI" v-model="formBin.deviceEui" required placeholder="Ej.: 01A3B45B7890F23A">
@@ -97,7 +97,7 @@
                             <h5 id="coordinates" class="coordinates"><b-badge variant="primary"></b-badge></h5>
                             <div class="card shadow">
                                 <div class="card-body">
-                                    <div id="map" style="height: 250px;
+                                    <div id="map" style="height: 350px;
                                 width: 100%;"></div>
                                 </div>
                             </div>
@@ -123,7 +123,7 @@
                         </b-form-group>
 
                         <b-button class="mr-2" type="submit" variant="primary">Aplicar</b-button>
-                        <b-button variant="danger">Cancelar</b-button>
+                        <b-button @click="onResetBasurero" variant="danger">Cancelar</b-button>
 
                     </b-form>
 
@@ -132,9 +132,6 @@
             </b-tabs>
 
         </b-container>
-
-
-
     </div>
 </template>
 
@@ -142,10 +139,12 @@
 import axios from 'axios';
 import mapboxgl from "mapbox-gl";
 const API_URL = process.env.API_URL;
+import Swal from 'sweetalert2';
 
 export default {
     data() {
         return {
+            userlogged: JSON.parse(localStorage.getItem('userdata')),
             formCompany: {
                 rnc: '',
                 name: '',
@@ -185,7 +184,7 @@ export default {
             try {
                 var coord = document.getElementById('coordinatesCompa').textContent.split(" ")
                 var coor = coord[1]+","+coord[3];
-                var res = await axios.post(`${API_URL}/clientCompany`,
+                var res = await axios.post(`${API_URL}/clientCompany/0`,
                                             {
                                                 "rnc":this.formCompany.rnc,
                                                 "name":this.formCompany.name,
@@ -196,6 +195,11 @@ export default {
 
                 console.log(res.status)
             } catch (error) {
+                Swal.fire(
+                    'Uups, ha ocurrido un error!',
+                    '',
+                    'error'
+                )
                 console.log(error)
             }
             
@@ -212,7 +216,19 @@ export default {
                                             });
 
                 console.log(res.status)
+                this.onResetUser();
+                Swal.fire(
+                    'Registrado con exito!',
+                    '',
+                    'success'
+                )
+                
             } catch (error) {
+                Swal.fire(
+                    'Uups, ha ocurrido un error!',
+                    '',
+                    'error'
+                )
                 console.log(error)
             }
             
@@ -221,7 +237,7 @@ export default {
             try {
                 evt.preventDefault()
                 var coord = document.getElementById('coordinates').textContent.split(" ")
-                var coor = coord[1]+","+coord[3];
+                var coor = parseFloat(coord[1]).toFixed(6)+","+parseFloat(coord[3]).toFixed(6);
                 var res = await axios.post(`${API_URL}/dustbin/0`,
                                             {
                                                 "deviceEui":this.formBin.deviceEui,
@@ -232,23 +248,42 @@ export default {
                                                 "coordinates": coor
                                             });
                 console.log(res.status)
+                this.onResetBasurero();
+                Swal.fire(
+                    'Registrado con exito!',
+                    '',
+                    'success'
+                )
             } catch (error) {
+                Swal.fire(
+                    'Uups, ha ocurrido un error!',
+                    '',
+                    'error'
+                )
                 console.log(error)
             }
         },
-        onReset(evt) {
-            evt.preventDefault()
-            // Reset our form values
-            this.form.email = ''
-            this.form.name = ''
-            this.form.food = null
-            this.form.checked = []
-            // Trick to reset/clear native browser form validation state
-            this.show = false
-            this.$nextTick(() => {
-                this.show = true
-            })
+        onResetCompany() {
+            this.formCompany.rnc = ""
+            this.formCompany.name = "",
+            this.formCompany.provincia = ""
+            this.formCompany.address = ""
+           
         },
+        onResetUser() {
+            this.formUser.firstname = ""
+            this.formUser.lastname = ""
+            this.formUser.email = ""
+            this.formUser.rncComp = ""   
+        },
+        onResetBasurero() {
+            this.formBin.deviceEui = ""
+            this.formBin.rncComp = ""
+            this.formBin.type = ""
+            this.formBin.descrip = ""
+            this.formBin.selectedMaterial = ""
+              
+        },        
         async loadAvailableCompanies(){
             try {
                 var res = await axios.get(`${API_URL}/clientCompany/0`);
@@ -271,7 +306,7 @@ export default {
                     container: "map",
                     style: "mapbox://styles/mapbox/streets-v11",
                     center: [-70.703692, 19.415888],
-                    zoom: 12,
+                    zoom: 11,
                 });
             var canvas = map.getCanvasContainer();
             var geojson = {
@@ -370,7 +405,7 @@ export default {
                     container: "mapCompa",
                     style: "mapbox://styles/mapbox/streets-v11",
                     center: [-70.703692, 19.415888],
-                    zoom: 12,
+                    zoom: 11,
                 });
             var canvas = map.getCanvasContainer();
             var geojson = {
@@ -463,15 +498,10 @@ export default {
         },
     },
     mounted() {
+        this.$emit('childToParent', this.userlogged)
         this.loadAvailableCompanies();
         this.create_map_point_dragdable_bin();
         this.create_map_point_dragdable_compa();
-       
-        
-
-        
-
-        
                         
     }
 }

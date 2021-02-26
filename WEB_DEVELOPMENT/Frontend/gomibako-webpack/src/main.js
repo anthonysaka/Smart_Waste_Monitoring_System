@@ -8,6 +8,8 @@ import Axios from 'axios'
 
 import BootstrapVue from 'bootstrap-vue'
 Vue.use(BootstrapVue);
+import { ToastPlugin } from 'bootstrap-vue'
+Vue.use(ToastPlugin)
 
 
 Vue.config.productionTip = false

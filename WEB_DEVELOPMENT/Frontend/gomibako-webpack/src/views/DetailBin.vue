@@ -2,9 +2,13 @@
   <div class="Dashboard">
     <b-container fluid>
 
-      <b-jumbotron class="jumbotron pt-4">
-        <h5 class="h5 text-gray-800 mb-2"><strong> GRAFICOS </strong></h5>
-        <b-row>
+      <b-jumbotron class="jumbotron pt-2">
+         <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="h5 text-gray-800 my-0"><strong> GRAFICOS </strong></h5>
+            </div>
+         </div>
+         <b-row>
           <b-container>
             <div class="d-flex justify-content- mb-4">
               <b-form-select searchable="Search here.." v-model="selected" :options="listAvailableBins" class="mb- mr-4"
@@ -16,8 +20,8 @@
         
         
         <b-row>
-          <b-col cols="12" md="5">
-            <div class="card">
+          <b-col cols="12" md="5" >
+            <div class="card mt-2">
               <div class="card-body">
                 <div class="chart-area pt-4">
                   <lineChart :width="200" :height="250" v-if="loadedLine" :chart-data="datacollectionLine[0]">
@@ -43,11 +47,9 @@
           <b-col cols="12" md="7" style="margin-top:3.8%;">
             <div class="card w-200" >
               <div class="d-flex px-2 pb-4">
-                <h5 class="h5 mr-auto ml-2 mt-2 mb-n1 text-gray-800" style="color: RGB(79, 79, 79) !important;">Live
-                  Data of:<strong>{{titlebin}}</strong></h5>
+                <h5 class="h5 mr-auto ml-2 mt-2 mb-n1 text-gray-800" style="color: RGB(79, 79, 79) !important;">Codigo:&nbsp;<strong>{{titlebin}}</strong></h5>
                 <hr>
-                <h5 class="h5 mt-2 mb-n1 mr-2  text-gray-800" style="color: RGB(79, 79, 79) !important;">Last update
-                  at:<strong>{{updatetime}}</strong></h5>
+                <h5 class="h5 mt-2 mb-n1 mr-2  text-gray-800" style="color: RGB(79, 79, 79) !important;">Fecha correspondiente a:&nbsp;<strong>{{updatetime}}</strong></h5>
                 <hr>
               </div>
 
@@ -234,29 +236,92 @@
 
 <!-- SECOND SECTION -->
       <b-jumbotron class="jumbotron">
-        <b-col cols="12" md="8">
-          <b-table responsive="sm" borderless hover :items="items" :fields="fields" head-variant="light" selectable
-            select-mode="single" @row-selected="onRowSelected">
+        <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="h5 text-gray-800 my-0"><strong> LISTADO DE BASUREROS</strong></h5>
+            </div>
+         </div>
 
-            <!-- Example scoped slot for select state illustrative purposes -->
-            <template #cell(selected)="{ rowSelected }">
-              <template v-if="rowSelected">
-                <span aria-hidden="true">&check;</span>
-                <span class="sr-only">Selected</span>
-              </template>
-              <template v-else>
-                <span aria-hidden="true">&nbsp;</span>
-                <span class="sr-only">Not selected</span>
-              </template>
-            </template>
 
-          </b-table>
+        <b-container style="display: flex;justify-content: center;">
+            <b-input-group size="md" class="mb-4 w-50">
+              <b-form-input v-model="filter" type="search" id="filterInput" placeholder="Escribe para buscar"></b-form-input>
+            </b-input-group>
+
+        </b-container>
+          
+
+        <b-col cols="12">
+          <div class="card">
+              <div class="card-body">
+                  <b-table responsive="sm" borderless hover :items="items" :fields="fields" head-variant="light" selectable
+                    select-mode="single" @row-selected="onRowSelected" :filter="filter"
+                    :filter-included-fields="filterOn">
+
+                    <!-- Example scoped slot for select state illustrative purposes -->
+                    <template #cell(selected)="{ rowSelected }">
+                      <template v-if="rowSelected">
+                        <span aria-hidden="true">&check;</span>
+                        <span class="sr-only">Selected</span>
+                      </template>
+                      <template v-else>
+                        <span aria-hidden="true">&nbsp;</span>
+                        <span class="sr-only">Not selected</span>
+                      </template>
+                    </template>
+
+                  </b-table>
+              </div>
+          </div>
         </b-col>
       </b-jumbotron>
 
-           
+      <!-- THIRD SECTION -->
+      <b-jumbotron class="jumbotron">
+        <div class="card mb-4">
+            <div class="card-body">
+              <h5 class="h5 text-gray-800 my-0"><strong> DATOS BASUREROS</strong></h5>
+            </div>
+            <b-button  @click="loadDataBinTable()" variant="primary">Actualizar</b-button>
+         </div>
+    
+        
+        <b-container style="display: flex;justify-content: center;">
+            <b-input-group size="md" class="mb-4 w-50">
+              <b-form-input v-model="filterD" type="search" id="filterInputD" placeholder="Escribe para buscar"></b-form-input>
+            </b-input-group>
+
         </b-container>
-    </div>
+          
+
+        <b-col cols="12">
+          <div class="card">
+              <div class="card-body">
+                  <b-table responsive="sm" borderless hover :items="itemsD" :fields="fieldsD" head-variant="light" selectable
+                    select-mode="single" @row-selected="onRowSelected" :filter="filterD"
+                    :filter-included-fields="filterOnD">
+
+                    <!-- Example scoped slot for select state illustrative purposes -->
+                    <template #cell(selected)="{ rowSelected }">
+                      <template v-if="rowSelected">
+                        <span aria-hidden="true">&check;</span>
+                        <span class="sr-only">Selected</span>
+                      </template>
+                      <template v-else>
+                        <span aria-hidden="true">&nbsp;</span>
+                        <span class="sr-only">Not selected</span>
+                      </template>
+                    </template>
+
+                  </b-table>
+              </div>
+          </div>
+        </b-col>
+      </b-jumbotron>
+
+
+    </b-container>
+  </div>
 
 </template>
 
@@ -301,12 +366,7 @@ export default {
                     key: 'name',
                     label: 'NOMBRE',
                     sortable: true
-                }, 
-                {
-                    key: 'deviceEUI',
-                    label: 'DEVICE EUI',
-                    sortable: true
-                }, 
+                },  
                 {
                     key: 'type',
                     label: 'TIPO',
@@ -314,23 +374,76 @@ export default {
                 },
                 {
                     key: 'material',
-                    label: 'MATERIAL CONTENIDO',
+                    label: 'CONTENIDO',
                     sortable: true,
                 },
                 {
                     key: 'location',
-                    label: 'Ubicacion',
+                    label: 'UBICACION',
                     sortable: true,
                 },
                 {
                     key: 'description',
-                    label: 'Descripcion',
+                    label: 'DESCRIPCION',
+                    sortable: true,
+                },
+                {
+                    key: 'date',
+                    label: 'FECHA REGISTRO',
                     sortable: true,
                 },
 
             ],
             items: [ ],
+            fieldsD: [
+                {
+                    key: 'selected',
+                    label: '[*]',
+                    sortable: true
+                }, 
+                {
+                    key: 'name',
+                    label: 'NOMBRE',
+                    sortable: true
+                },
+                {
+                    key: 'level',
+                    label: '%',
+                    sortable: true,
+                },
+                {
+                    key: 'volumen',
+                    label: 'VOL.',
+                    sortable: true,
+                },
+                {
+                    key: 'temperature',
+                    label: 'TEMP.',
+                    sortable: true,
+                },
+                {
+                  key: 'humidity',
+                  label: 'HUM.',
+                  sortable: true,
+                },
+                {
+                  key: 'date',
+                  label: 'FECHA',
+                  sortable: true,
+                },
+                {
+                    key: 'datatype',
+                    label: 'DType.',
+                    sortable: true,
+                },
+
+            ],
+            itemsD: [ ],
             selectedTable: null,
+            filter: null,
+            filterOn:[],
+            filterD: null,
+            filterOnD:[],
             show_one: false,
             show_three: false,
             typeM: '',
@@ -445,7 +558,6 @@ export default {
                 try {           
                     var res = await axios.get(`${API_URL}/bindata/1`,{ params: {namebin: this.namebin.split(" ")[0] }});
                     var data = res.data;
-                    console.log(data.length)
                  
                     var labels = []
 
@@ -533,7 +645,6 @@ export default {
                       }
 
                       for (var i = 0; i < data.length; i++) {
-                        console.log(data[i].data_sensor.lvlPlastic)
                         labels.push(data[i].created_date.split("GMT")[0])
                         datasetsPlastic.data.push(data[i].data_sensor.lvlPlastic)
                         datasetsMetal.data.push(data[i].data_sensor.lvlMedal)
@@ -575,8 +686,8 @@ export default {
                 this.namebin = this.selected
                 this.getLastValues()
                 this.getBinGraphicValues()
-                x = setInterval(this.getLastValues,30000)
-                y = setInterval(this.getBinGraphicValues,30000)   
+                x = setInterval(this.getLastValues,5000)
+                y = setInterval(this.getBinGraphicValues,5000)   
               }        
             } catch (error) {
               Swal.fire(
@@ -598,8 +709,34 @@ export default {
 
                 for (var i = 0; i < res.data.length; i++) {
                     this.listAvailableBins.push(res.data[i].name + " - " + res.data[i].type + " - " + res.data[i].material_waste)        
-                    let row = {name:res.data[i].name,deviceEUI:res.data[i].deviceeui,type:res.data[i].type,material:res.data[i].material_waste,location:res.data[i].coordinates,description:res.data[i].description}
+                    let row = {name:res.data[i].name,type:res.data[i].type,material:res.data[i].material_waste,location:res.data[i].coordinates,description:res.data[i].description,date:res.data[i].created_date}
                     this.items.push(row) 
+                }
+                console.log(res.status)
+            } catch (error) {
+                console.log(error)
+            }
+        },
+        async loadDataBinTable(){
+            try {
+                console.log(this.userlogged.rnc_compa)
+                var res = await axios.get(`${API_URL}/dustbin/1`,{ params: {rncComp: this.userlogged.rnc_compa}});
+               
+                for (var i = 0; i < res.data.length; i++) { 
+                    var res1 = await axios.get(`${API_URL}/bindata/2`,{ params: {namebin: res.data[i].name }}); 
+
+                      for (var x = 0; x < res1.data.length; x++) { 
+                         if(res.data[i].type == 'Tradicional - 1 contenedor'){
+                              let row = {name:res.data[i].name,level:res1.data[x].data_sensor.lvlsingle,volumen:res1.data[x].data_sensor.volumen,temperature:res1.data[x].data_sensor.temperature,
+                                        humidity:res1.data[x].data_sensor.humidity,date:res.data[i].created_date,datatype:res1.data[x].data_sensor.datatype}
+                              this.itemsD.push(row);
+                          }else{          
+                              let lvl = (String(res1.data[x].data_sensor.lvlPlastic) + "-" + String(res1.data[x].data_sensor.lvlMedal) + "-" + String(res1.data[x].data_sensor.lvlPaper));
+                              let row = {name:res.data[i].name,level:lvl,volumen:res1.data[x].data_sensor.volumen,temperature:res1.data[x].data_sensor.temperature,
+                                        humidity:res1.data[x].data_sensor.humidity,date:res.data[i].created_date,datatype:res1.data[x].data_sensor.datatype}
+                              this.itemsD.push(row);
+                          }
+                      }
                 }
                 console.log(res.status)
             } catch (error) {
@@ -608,11 +745,13 @@ export default {
         },
         onRowSelected(items) {
             this.selectedTable = items;
-            this.getBinGraphicValues();
+            //this.getBinGraphicValues();
         },
     },
     mounted(){
-        this.loadAvailableBins()
+      this.$emit('childToParent', this.userlogged)
+      this.loadAvailableBins()
+      this.loadDataBinTable()
        
 
        /* mapboxgl.accessToken = this.accessToken;
