@@ -10,7 +10,9 @@ import BootstrapVue from 'bootstrap-vue'
 Vue.use(BootstrapVue);
 import { ToastPlugin } from 'bootstrap-vue'
 Vue.use(ToastPlugin)
-
+import VueToast from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-sugar.css';
+Vue.use(VueToast);
 
 Vue.config.productionTip = false
 Vue.prototype.$http = Axios;

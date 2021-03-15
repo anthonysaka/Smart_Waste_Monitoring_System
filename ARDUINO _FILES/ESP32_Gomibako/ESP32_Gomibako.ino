@@ -9,7 +9,7 @@
 #include <HardwareSerial.h>
 #include "DHT.h"
 #include "RAK811.h"
-#include <math.h>       /* modf */
+#include <math.h>       
 #include "ESP32Time.h"
 
 
@@ -76,7 +76,7 @@ void setup()
 
   setupRAK811Node();
 
-  rtc.setTime(0, 9, 23, 25, 2, 2021);
+  rtc.setTime(0, 20, 19, 26, 2, 2021);
   
  
   delay(2000); //Time to init the system
@@ -170,15 +170,19 @@ void loop()
     DebugSerial.println(humidity);
     DebugSerial.println(volumen);
     DebugSerial.println("--------------\n");
-    DebugSerial.println(rtc.getTimeDate());
+    char dateS[30];
+    rtc.getTimeDate().toCharArray(dateS,30);
+    DebugSerial.println(dateS);
 
     //Load on variable buffer formatted sensor data(Strings)
     sprintf(buffer,"%04d%04d%02d%02d%02d%01d%01d%01d%01d%06d",(int)(temperature*100),(int)(humidity*100),lvl_percent_Plastic,lvl_percent_Metal,lvl_percent_PaperCarton,statusPlastic,statusMetal,statusPaperCarton,statusGeneral,(int)(volumen*100));
-      
+      strcat(buffer,dateS);
     //Encode Buffer in HexString
     int len = strlen(buffer);
+  
     char hex_str[(len*2)+1];
     convert_hexa(buffer, hex_str);
+  
    
     printf("UTF-8: %s\n", buffer);
     printf("Hexadecimal: %s\n", hex_str);

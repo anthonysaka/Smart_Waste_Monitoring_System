@@ -440,14 +440,35 @@ ul.CTAs a {
 .marker {
     background-image: url('../img/marker_bin_map.png');
     background-size: cover;
+    width: 62px;
+    height: 62px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.marker_full {
+    background-image: url('../img/marker_bin_map_full.png');
+    background-size: cover;
     width: 50px;
     height: 50px;
     border-radius: 50%;
     cursor: pointer;
-  }
+}
+
+
+.marker_overload {
+    background-image: url('../img/marker_bin_map_overload.png');
+    background-size: cover;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+}
+
 
 .marker1 {
     background-image: url('../img/garage-open.png');
+
     background-size: cover;
     width: 60px;
     height: 60px;
@@ -694,9 +715,6 @@ th{
     color: #666666;
   }
   
-
-
-
 
 
 /* ---------------------------------------------------

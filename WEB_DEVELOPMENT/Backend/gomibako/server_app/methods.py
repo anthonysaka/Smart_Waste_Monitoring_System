@@ -6,12 +6,12 @@ from datetime import datetime
 
 class MethodsDatabase:
 
-    def save_sensor_data(deviceEui,devicename,data,date):
+    def save_sensor_data(deviceEui,devicename,data,nodeDate,date):
         try:
             conn = Connectiondb.getConnectionToPostgre()
             cur = conn.cursor()
 
-            cur.callproc('savesensordata',(deviceEui,devicename,data,date))
+            cur.callproc('savesensordata',(deviceEui,devicename,data,nodeDate,date))
 
             conn.commit()
             cur.close()
@@ -114,6 +114,46 @@ class MethodsDatabase:
             print(error)
             return False
 
+    def get_list_all_user():
+        try:
+            conn = Connectiondb.getConnectionToPostgre()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+            cur.execute('SELECT * FROM public.user;')
+            result = cur.fetchall()
+
+            if not result:
+                result = None
+        
+            conn.commit()
+            cur.close()
+            conn.close()
+            return result
+
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False
+    
+    def get_list_driver_by_company(rncComp):
+        try:
+            conn = Connectiondb.getConnectionToPostgre()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+            cur.execute('SELECT * FROM public.user WHERE type = %s and rnc_compa = %s;',('Chofer',str(rncComp),))
+            result = cur.fetchall()
+
+            if not result:
+                result = None
+        
+            conn.commit()
+            cur.close()
+            conn.close()
+            return result
+
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False
+
     def add_dustbin(deviceEui,typeD,descrip,rncComp,mWaste,coordinates):
         try:
             conn = Connectiondb.getConnectionToPostgre()
@@ -135,6 +175,24 @@ class MethodsDatabase:
             cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
             cur.execute('SELECT * FROM public.dustbin WHERE rnc_compa = %s ORDER BY id DESC;',(rncComp,))
+            result = cur.fetchall()
+            if not result:
+                result = None
+        
+            conn.commit()
+            cur.close()
+            conn.close()
+            return result
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False
+            
+    def get_all_list_dustbin():
+        try:
+            conn = Connectiondb.getConnectionToPostgre()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+            cur.execute('SELECT * FROM public.dustbin ORDER BY id DESC;')
             result = cur.fetchall()
             if not result:
                 result = None
@@ -185,12 +243,12 @@ class MethodsDatabase:
             print(error)
             return False
 
-    def get_20_dustbin_data(namebin):
+    def get_50_dustbin_data(namebin):
         try:
             conn = Connectiondb.getConnectionToPostgre()
             cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
-            cur.execute('SELECT data_sensor, created_date FROM (SELECT data_sensor, created_date FROM public.dustbindata WHERE device_name = %s ORDER BY created_date DESC LIMIT 20) AS last10values ORDER BY created_date ASC;',(namebin,))
+            cur.execute('SELECT data_sensor, created_date FROM (SELECT data_sensor, created_date FROM public.dustbindata WHERE device_name = %s ORDER BY created_date DESC LIMIT 50) AS last10values ORDER BY created_date ASC;',(namebin,))
             result = cur.fetchall()
 
             if not result:
@@ -285,6 +343,38 @@ class MethodsDatabase:
             cur.close()
             conn.close()
             return True
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False
+    
+    def save_routes(rnc,route_info,date,status):
+        try:
+            conn = Connectiondb.getConnectionToPostgre()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+            cur.execute('CALL addroutes(%s, %s, %s, %s)',(rnc,route_info,date,status))
+            conn.commit()
+            cur.close()
+            conn.close()
+            return True
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False
+    
+    def load_routes(rncComp):
+        try:
+            conn = Connectiondb.getConnectionToPostgre()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+            cur.execute('SELECT * FROM public.routes WHERE rnc_compa = %s;',(rncComp,))
+            result = cur.fetchall()
+            if not result:
+                result = None
+        
+            conn.commit()
+            cur.close()
+            conn.close()
+            return result
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
             return False

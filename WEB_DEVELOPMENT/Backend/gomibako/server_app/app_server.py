@@ -35,8 +35,8 @@ app.config['CORS_HEADERS'] = 'Content-Type'
 
 app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 587
-app.config['MAIL_USERNAME'] = 'anthonysk2017@gmail.com'
-app.config['MAIL_PASSWORD'] = 'semeolvido1999'
+app.config['MAIL_USERNAME'] = 'gomibakoteamcompany@gmail.com'
+app.config['MAIL_PASSWORD'] = 'gomibakoprueba123'
 app.config['MAIL_USE_TLS'] = True
 app.config['MAIL_USE_SSL'] = False
 
@@ -71,8 +71,10 @@ def handle_mqtt_message(client, userdata, message):
     device_name = str(dict_data['deviceName'])
     json_sensor_data = json.dumps(dict_data['object'],indent=4)
     code = str(dict_data['object']['codeStatus'])
+    nodeDate = str(dict_data['object']['nodeDate'])
 
-    if(MethodsDatabase.save_sensor_data(device_eui,device_name,json_sensor_data,dtime.now())):
+    if(MethodsDatabase.save_sensor_data(device_eui,device_name,json_sensor_data,nodeDate, dtime.now())):
+        print(dtime.now())
         print("[*] Sensor Data Saved OK!\n")
 
         #Conditions to send notification about status of fill level
@@ -173,12 +175,50 @@ def api_user():
         print(password)
 
         if(MethodsDatabase.add_user(username,email,password,firstname,lastname,typeU,rncComp)):
-            msg = Message('GOMIBAKO TEAM - Credentials', sender = 'anthonysk2017@gmail.com', recipients = [str(email)])
-            msg.body = "Hey, este es tu usuario y contrasena por defecto:\n     " +"Usuario: " + username +"\n"  + "     Contrasena: " + password + "\nCuando inicie sesion, se le pedira que cambie el usuario y contrasena.\nSaludos,\nGOMIBAKO TEAM"
+            msg = Message('GOMIBAKO TEAM COMPANY - Credentials', sender = 'gomibakoteamcompany@gmail.com', recipients = [str(email)])
+            msg.body = "***** CREDENCIALES ***** \n\n Hey, este es tu usuario y contrasena por defecto:\n\n     " +"Usuario: " + username +"\n"  + "     Contrasena: " + password + "\n\nCuando inicie sesion, se le pedira que cambie el usuario y contrasena.\nSaludos,\nGOMIBAKO TEAM"
             mail.send(msg)
             
             return jsonify({'code':201,'response':"Registrado con exito, usuario y contrasena enviado al emai.",'firstname':firstname, 
                             'lastname':lastname,'email':email}),201
+        else:
+            abort(500,description="Error en la base de datos")
+    
+    elif request.method == 'GET':
+        return
+
+@app.route("/gomibako/internalapi/1.0/driver",methods=['POST','GET'])
+def api_driver():
+    if request.method == 'POST':    
+        email = request.json['email']
+        firstname = request.json['firstname']
+        lastname = request.json['lastname']
+        typeU = "Chofer"
+        rncComp = request.json['rncCompa']
+
+        username = str(generator_random_default_username(firstname,lastname))
+        print(username)
+        password = str(generator_random_default_user_password())
+        print(password)
+
+        if(MethodsDatabase.add_user(username,email,password,firstname,lastname,typeU,rncComp)):
+            msg = Message('GOMIBAKO TEAM - Credentials', sender = 'anthonysk2017@gmail.com', recipients = [str(email)])
+            msg.body = "***** CREDENCIALES ***** \n\n Hey, este es tu usuario y contrasena por defecto:\n\n     " +"Usuario: " + username +"\n"  + "     Contrasena: " + password + "\n\nCuando inicie sesion, se le pedira que cambie el usuario y contrasena.\nSaludos,\nGOMIBAKO TEAM"
+            mail.send(msg)
+            
+            return jsonify({'code':201,'response':"Registrado con exito, usuario y contrasena enviado al emai.",'firstname':firstname, 
+                            'lastname':lastname,'email':email}),201
+        else:
+            abort(500,description="Error en la base de datos")
+    
+    elif request.method == 'GET':
+        rncComp = request.args.get('rncComp')
+        listdrivercompany = MethodsDatabase.get_list_driver_by_company(rncComp)
+        
+        if listdrivercompany is not None:
+            return jsonify(listdrivercompany),200
+        elif listdrivercompany is None:
+            return jsonify({'code':404,'response':'No hay basureros registrados!'}),404
         else:
             abort(500,description="Error en la base de datos")
 
@@ -225,6 +265,7 @@ def api_dustbin(loadtype):
             return jsonify({'code':201,'response':"Registrado con exito",'deviceEui':deviceEui}),201
         else:
             abort(500,description="Error en la base de datos")
+
     elif request.method == 'GET' and loadtype == 1:
         rncComp = request.args.get('rncComp')
         listbinscompany = MethodsDatabase.get_company_list_dustbin(rncComp)
@@ -232,6 +273,16 @@ def api_dustbin(loadtype):
         if listbinscompany is not None:
             return jsonify(listbinscompany),200
         elif listbinscompany is None:
+            return jsonify({'code':404,'response':'No hay basureros registrados!'}),404
+        else:
+            abort(500,description="Error en la base de datos")
+
+    elif request.method == 'GET' and loadtype == 2:
+        listallbins = MethodsDatabase.get_all_list_dustbin()
+        
+        if listallbins is not None:
+            return jsonify(listallbins),200
+        elif listallbins is None:
             return jsonify({'code':404,'response':'No hay basureros registrados!'}),404
         else:
             abort(500,description="Error en la base de datos")
@@ -263,7 +314,7 @@ def api_dustbin_data(typeget):
     elif request.method == 'GET' and typeget == 2:
         namebin = request.args.get('namebin')
         print(namebin)
-        data_all = MethodsDatabase.get_20_dustbin_data(namebin)
+        data_all = MethodsDatabase.get_50_dustbin_data(namebin)
         #print(data_all)
 
         if data_all is not None:
@@ -284,7 +335,6 @@ def login():
             token = jwt.encode({'user':username,'exp':datetime.datetime.utcnow()+datetime.timedelta(seconds=28800)},app.config['SECRET_KEY'])
             return jsonify({'code':200,'response':"Autentificacion con exito",'token':token.decode('utf-8'),'user':userObject}),200
         elif userObject is None:
-            print("ENTRE")
             return jsonify({'code':404,'response':'Username or password incorrect!'}),404
         else:
             abort(500,description="Error en la base de datos")
@@ -353,5 +403,36 @@ def get_smart_routes():
 
         solution = generate_smart_routes(distance_matrix,demands,truck_capacities,cant_truck)
         return jsonify({'code':200,'solution':solution}),200
+
+@app.route("/gomibako/internalapi/1.0/saveroutes",methods=['POST'])
+def save_routes():
+    if request.method == 'POST':
+        rnc = request.json['rncCompa']
+        route_info = json.dumps(request.json['route_info'])
+        date = dtime.now()
+        status = request.json['status']
+
+        if(MethodsDatabase.save_routes(rnc,route_info,date,status)):
+            return jsonify({'code':201,'response':'Guardado con exito'}),201
+        else:
+            abort(500,description="Error en la base de datos")
+        
+@app.route("/gomibako/internalapi/1.0/loadroutes",methods=['GET'])
+def load_routes():
+    if request.method == 'GET':
+        rncComp = request.args.get('rncComp')
+
+        listRoutes = MethodsDatabase.load_routes(rncComp)
+
+        if listRoutes is not None:
+            return jsonify(listRoutes),200
+        elif listRoutes is None:
+            return jsonify({'code':404,'response':'No hay Rutas Registradas!'}),404
+        else:
+            abort(500,description="Error en la base de datos")
+
+        
+        
+
         
 

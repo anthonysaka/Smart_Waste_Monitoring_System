@@ -29,6 +29,12 @@
               Trucks
             </router-link>
           </li>
+           <li>
+            <router-link to="/drivers">
+              <i class="fas fa-users"></i>
+              Drivers
+            </router-link>
+          </li>
           <li>
             <router-link to="/routing">
               <i class="fas fa-route"></i>
@@ -120,10 +126,14 @@ export default {
             title: 'FULL',
             text: data.devName,
             showConfirmButton: false,
+            timerProgressBar: true,
             toast: true,
-            timer: 5000
+            timer: 5000,
+            didOpen: (toast) => {
+              toast.addEventListener('mouseenter', Swal.stopTimer)
+              toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
           })
-          
         } else {
           Swal.fire({
             position: 'top-end',
@@ -131,8 +141,13 @@ export default {
             title: 'OVERLOAD',
             text: data.devName,
             showConfirmButton: false,
+            timerProgressBar: true,
             toast: true,
-            timer: 5000
+            timer: 5000,
+            didOpen: (toast) => {
+              toast.addEventListener('mouseenter', Swal.stopTimer)
+              toast.addEventListener('mouseleave', Swal.resumeTimer)
+            }
           })
           
         }

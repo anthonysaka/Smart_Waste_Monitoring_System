@@ -279,10 +279,15 @@
       <!-- THIRD SECTION -->
       <b-jumbotron class="jumbotron">
         <div class="card mb-4">
-            <div class="card-body">
-              <h5 class="h5 text-gray-800 my-0"><strong> DATOS BASUREROS</strong></h5>
-            </div>
-            <b-button  @click="loadDataBinTable()" variant="primary">Actualizar</b-button>
+          <b-row>
+            <b-col cols="9" class="card-body">
+              <h5 class="h5 ml-2 text-gray-800 my-0"><strong> DATOS BASUREROS</strong></h5>
+            </b-col>
+            <b-col cols="3">
+                <h5 class="h5 mt-4 text-gray-800" style="color: RGB(79, 79, 79) !important;">Actualizado:&nbsp;<strong>{{timestamp}}</strong></h5>
+            </b-col>
+
+          </b-row>
          </div>
     
         
@@ -290,6 +295,9 @@
             <b-input-group size="md" class="mb-4 w-50">
               <b-form-input v-model="filterD" type="search" id="filterInputD" placeholder="Escribe para buscar"></b-form-input>
             </b-input-group>
+            <b-col cols="2">
+               <b-button  @click="loadDataBinTable()" variant="primary">Actualizar Datos</b-button>
+            </b-col>
 
         </b-container>
           
@@ -297,9 +305,9 @@
         <b-col cols="12">
           <div class="card">
               <div class="card-body">
-                  <b-table responsive="sm" borderless hover :items="itemsD" :fields="fieldsD" head-variant="light" selectable
+                  <b-table id="tableDataBin" responsive="sm" borderless hover :items="itemsD" :fields="fieldsD" head-variant="light" selectable
                     select-mode="single" @row-selected="onRowSelected" :filter="filterD"
-                    :filter-included-fields="filterOnD">
+                    :filter-included-fields="filterOnD" :current-page="currentPage" :per-page="perPage">
 
                     <!-- Example scoped slot for select state illustrative purposes -->
                     <template #cell(selected)="{ rowSelected }">
@@ -315,6 +323,15 @@
 
                   </b-table>
               </div>
+              <b-pagination class="px-4 mx-4"
+                v-model="currentPage"
+                :total-rows="rows"
+                :per-page="perPage"
+                align="fill"
+                size="sm"
+                aria-controls="tableDataBin">
+               
+              </b-pagination>
           </div>
         </b-col>
       </b-jumbotron>
@@ -339,6 +356,9 @@ export default {
     },
     data (){
         return {
+            perPage: 10,
+            currentPage: 1,
+            timestamp: null,
             userlogged: JSON.parse(localStorage.getItem('userdata')),
             datacollectionDonut: [],
             datacollectionLine: [],
@@ -426,9 +446,14 @@ export default {
                   label: 'HUM.',
                   sortable: true,
                 },
+                 {
+                  key: 'nodedate',
+                  label: 'FECHA Crec.',
+                  sortable: true,
+                },
                 {
                   key: 'date',
-                  label: 'FECHA',
+                  label: 'FECHA Rec.',
                   sortable: true,
                 },
                 {
@@ -451,6 +476,13 @@ export default {
         }
     },
     methods: {
+        getNow(){
+            const today = new Date();
+            const date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate();
+            const time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+            const dateTime = date +' '+ time;
+            this.timestamp = dateTime;
+        },
         async getLastValues(){
             if(this.selected != null) {      
                 var auxlvlPlast = 0;
@@ -718,6 +750,8 @@ export default {
             }
         },
         async loadDataBinTable(){
+          this.getNow();
+          this.itemsD = []
             try {
                 console.log(this.userlogged.rnc_compa)
                 var res = await axios.get(`${API_URL}/dustbin/1`,{ params: {rncComp: this.userlogged.rnc_compa}});
@@ -728,16 +762,18 @@ export default {
                       for (var x = 0; x < res1.data.length; x++) { 
                          if(res.data[i].type == 'Tradicional - 1 contenedor'){
                               let row = {name:res.data[i].name,level:res1.data[x].data_sensor.lvlsingle,volumen:res1.data[x].data_sensor.volumen,temperature:res1.data[x].data_sensor.temperature,
-                                        humidity:res1.data[x].data_sensor.humidity,date:res.data[i].created_date,datatype:res1.data[x].data_sensor.datatype}
+                                        humidity:res1.data[x].data_sensor.humidity,nodedate:res1.data[x].data_sensor.nodeDate,date:res1.data[x].created_date,datatype:res1.data[x].data_sensor.datatype}
                               this.itemsD.push(row);
                           }else{          
                               let lvl = (String(res1.data[x].data_sensor.lvlPlastic) + "-" + String(res1.data[x].data_sensor.lvlMedal) + "-" + String(res1.data[x].data_sensor.lvlPaper));
                               let row = {name:res.data[i].name,level:lvl,volumen:res1.data[x].data_sensor.volumen,temperature:res1.data[x].data_sensor.temperature,
-                                        humidity:res1.data[x].data_sensor.humidity,date:res.data[i].created_date,datatype:res1.data[x].data_sensor.datatype}
+                                        humidity:res1.data[x].data_sensor.humidity,nodedate:res1.data[x].data_sensor.nodeDate,date:res1.data[x].created_date,datatype:res1.data[x].data_sensor.datatype}
                               this.itemsD.push(row);
+                              console.log(res1.data[x].created_date)
                           }
                       }
                 }
+  
                 console.log(res.status)
             } catch (error) {
                 console.log(error)
@@ -748,10 +784,17 @@ export default {
             //this.getBinGraphicValues();
         },
     },
+    computed: {
+      rows() {
+        return this.itemsD.length
+      }
+    },
     mounted(){
       this.$emit('childToParent', this.userlogged)
       this.loadAvailableBins()
-      this.loadDataBinTable()
+      this.loadDataBinTable();
+        // Set the initial number of items
+      this.totalRows = this.itemsD.length
        
 
        /* mapboxgl.accessToken = this.accessToken;

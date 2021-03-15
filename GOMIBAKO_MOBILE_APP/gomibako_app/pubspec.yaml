@@ -31,6 +31,7 @@ dependencies:
   mapbox_gl: ^0.10.0
   location: ^3.2.4
   location_web: ^1.0.1
+  http: ^0.12.2
 
 
 

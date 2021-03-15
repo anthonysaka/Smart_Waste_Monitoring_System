@@ -29,7 +29,7 @@ def generated_data():
             random_sensor_data = {'temperature':temperature,'humidity':humidity,'lvlsingle':lvlsingle,'volumen':volumen,'codeStatus':code}
             json_sensor_data = json.dumps(random_sensor_data,indent=4)
 
-            if(MethodsDatabase.save_sensor_data(device_eui[i],device_name[i],json_sensor_data,generated_date)):
+            if(MethodsDatabase.save_sensor_data(device_eui[i],device_name[i],json_sensor_data,datetime.now(),generated_date)):
                 print("[*] Simulation Sensor Data Saved OK!\n")
             else:
                 print("[*] Simulation Sensor Data Saved ERROR!\n")

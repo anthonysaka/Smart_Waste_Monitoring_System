@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gomibako_app/utils/api/providers/api.provider.dart';
 import 'package:gomibako_app/utils/config.helper.dart';
 import 'package:gomibako_app/utils/location.helper.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
@@ -23,7 +24,19 @@ class MyApp extends StatelessWidget {
   }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
+  @override
+  _HomePageState createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    final api = ApiProvider();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

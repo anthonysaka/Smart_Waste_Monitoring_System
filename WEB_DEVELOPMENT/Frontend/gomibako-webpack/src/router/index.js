@@ -47,6 +47,15 @@ const routes = [
     }
   },
   {
+    path: '/drivers',
+    name: 'Driver',
+    // which is lazy-loaded when the route is visited.
+    component: () => import('../views/Driver.vue'),
+    meta: {
+      requiresAuth: true
+    }
+  },
+  {
     path: '/routing',
     name: 'Routes',
     // which is lazy-loaded when the route is visited.
@@ -85,6 +94,12 @@ router.beforeEach((to, from, next) => {
     }
     next('/login')
   } else {
+    if(to.matched.some(record => record.path == "/login")){
+      if (store.getters.isLoggedIn) {
+        next('/home')
+        return
+      }
+    }
     next()
   }
 })

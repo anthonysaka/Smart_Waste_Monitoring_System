@@ -219,7 +219,7 @@ export default {
                 this.onResetUser();
                 Swal.fire(
                     'Registrado con exito!',
-                    '',
+                    res.response,
                     'success'
                 )
                 
