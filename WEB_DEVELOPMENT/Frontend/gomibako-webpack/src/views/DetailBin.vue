@@ -356,10 +356,10 @@ export default {
     },
     data (){
         return {
-            perPage: 10,
+            perPage: 20,
             currentPage: 1,
             timestamp: null,
-            userlogged: JSON.parse(localStorage.getItem('userdata')),
+            userlogged: JSON.parse(sessionStorage.getItem('userdata')),
             datacollectionDonut: [],
             datacollectionLine: [],
             loadedDonut: false,

@@ -76,7 +76,7 @@ void setup()
 
   setupRAK811Node();
 
-  rtc.setTime(0, 20, 19, 26, 2, 2021);
+  rtc.setTime(0, 16, 18, 26, 3, 2021);
   
  
   delay(2000); //Time to init the system
@@ -237,7 +237,7 @@ void loop()
         }
     }
 
-  delay(20000);
+  delay(30000);
   
 } //End Infinity Loop
 

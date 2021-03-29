@@ -26,20 +26,77 @@
                             <b-table responsive="sm" borderless hover :items="itemsTruck" :fields="fieldsTruck" head-variant="light" selectable
                                 select-mode="single" @row-selected="onRowSelectedTruck" :filter="filter"
                                 :filter-included-fields="filterOn">
-
-                                <!-- Example scoped slot for select state illustrative purposes -->
-                                <template #cell(selected)="{ rowSelected }">
-                                <template v-if="rowSelected">
-                                    <span aria-hidden="true">&check;</span>
-                                    <span class="sr-only">Selected</span>
-                                </template>
-                                <template v-else>
-                                    <span aria-hidden="true">&nbsp;</span>
-                                    <span class="sr-only">Not selected</span>
-                                </template>
+                        
+                                <template #cell(editK)="row">
+                                    <b-button size="sm" @click="edit(row.item, row.index, $event.target)" class="mr-1">Editar</b-button>
                                 </template>
 
                             </b-table>
+
+                             <!-- Edit modal -->
+                        <b-modal :id="editModal.id" :title="editModal.title"  hide-footer body-bg-variant="dark" header-bg-variant="dark" 
+                            header-text-variant="dark" size="lg" @hide="resetEditModal" >
+
+                     <b-container @submit.prevent="editTruck">
+                        <b-form>
+                            <h3 class="mt-4"> EDITAR </h3>
+                            <h4 class="mt-4"> INFORMACION GENERAL</h4>
+                            <hr class="line">
+                            <b-row>
+                                <b-col cols="6">
+                                    <b-form-group label="Codigo:" label-for="inputCode">
+                                        <b-input id="inputCode"  v-model="code" required readonly></b-input>
+                                    </b-form-group>
+                                </b-col>
+                            </b-row>
+                            <b-row>
+                                <b-col cols="6">
+                                    <b-form-group label="No. de placa:" label-for="inputPlaca">
+                                        <b-input id="inputPlaca"  v-model="placa" required readonly></b-input>
+                                    </b-form-group>
+                                </b-col>
+                                <b-col cols="6">
+                                    <b-form-group label="Ano:" label-for="inputAno">
+                                        <b-input id="inputAno" v-model="ano" placeholder="Ej.:2016"></b-input>
+                                    </b-form-group>
+                                </b-col>
+                            </b-row>
+                            <b-row>
+                                <b-col cols="6">
+                                    <b-form-group label="Marca:" label-for="inputMarca">
+                                        <b-input id="inputMarca" v-model="marca" placeholder="Ej.:Isuzu"></b-input>
+                                    </b-form-group>
+                                </b-col>
+                                <b-col cols="6">
+                                    <b-form-group label="Modelo:" label-for="inputModelo">
+                                        <b-input id="inputModelo" v-model="modelo" placeholder="Ej.:GA-Series"></b-input>
+                                    </b-form-group>
+                                </b-col>
+                            </b-row>
+                            <h4 class="mt-4"> PARAMETROS DEL CAMION</h4>
+                            <hr class="line">
+                            <b-row class="mb-4">
+                                <b-col cols="6">
+                                    <b-form-group label="Capacidad de carga(Kg):" label-for="inputCarga">
+                                        <b-input id="inputCarga" v-model="cap_kg" required placeholder="Ej.:400"></b-input>
+                                    </b-form-group>
+                                </b-col>
+                                <b-col cols="6">
+                                    <b-form-group label="Capacidad de volumen (pulg^3):" label-for="inputVol">
+                                        <b-input id="inputVol" v-model="cap_vol" required placeholder="Ej.:10000"></b-input>
+                                    </b-form-group>
+                                </b-col>
+                            </b-row>
+                            
+                        <b-button class="mr-2" type="submit" variant="primary">Guardar</b-button>
+                        <b-button @click="onReset" variant="danger">Cancelar</b-button>
+                        
+                        </b-form>
+                    </b-container>
+
+                            
+                            
+                        </b-modal>
                         </div>
                     </div>
                     </b-col>
@@ -111,7 +168,8 @@ import Swal from 'sweetalert2';
 export default {
     data(){
         return{
-            userlogged: JSON.parse(localStorage.getItem('userdata')),
+            userlogged: JSON.parse(sessionStorage.getItem('userdata')),
+            code:null,
             placa:null,
             ano:null,
             marca:null,
@@ -120,11 +178,6 @@ export default {
             cap_vol:null,
 
             fieldsTruck: [
-                {
-                    key: 'selected',
-                    label: '[*]',
-                    sortable: true
-                }, 
                 {
                     key: 'code',
                     label: 'CODE',
@@ -164,6 +217,10 @@ export default {
                     key: 'date',
                     label: 'Fecha registro',
                     sortable: true,
+                },{
+                    key: 'editK',
+                    label: 'Opciones',
+                   
                 },
             ],
             itemsTruck:[],
@@ -171,10 +228,34 @@ export default {
 
             filter: null,
             filterOn:[],
+            editModal: {
+                id: 'edit-modal',
+                title: '',
+                content: ''
+            },
+            auxTruckInfo: []
 
         }
     },
     methods:{
+        edit(item, index, button) {
+          
+            this.editModal.title = `Row index: ${index}`
+            this.editModal.content = this.auxTruckInfo[index]
+            this.code = this.auxTruckInfo[index].code
+            this.placa = this.auxTruckInfo[index].placa
+            this.ano=this.auxTruckInfo[index].ano
+            this.marca=this.auxTruckInfo[index].marca
+            this.modelo=this.auxTruckInfo[index].modelo
+            this.cap_kg=this.auxTruckInfo[index].cap_carga_kg
+            this.cap_vol=this.auxTruckInfo[index].cap_carga_vol
+            this.$root.$emit('bv::show::modal', this.editModal.id, button)
+        },
+         resetEditModal() {
+            this.editModal.title = ''
+            this.editModal.content = ''
+         
+        },
         async addTruck() {
             try {
                 var res = await axios.post(`${API_URL}/truck`,
@@ -204,6 +285,36 @@ export default {
             }
             
         },
+        async editTruck() {
+            try {
+                var res = await axios.put(`${API_URL}/truck`,
+                                            {   "code":this.code,
+                                                "ano":this.ano,
+                                                "marca": this.marca,
+                                                "model": this.modelo,
+                                                "cap_kg":this.cap_kg,
+                                                "cap_vol":this.cap_vol,
+                                            });
+
+                console.log(res.status)
+                
+                Swal.fire(
+                    'Editado con exito!',
+                    '',
+                    'success'
+                ).then(function() {
+                    window.location = "/trucks";
+                });
+            } catch (error) {
+                Swal.fire(
+                    'Uups, ha ocurrido un error!',
+                    '',
+                    'error'
+                )
+                console.log(error)
+            }
+            
+        },
         onReset(){
             this.placa = ""
             this.ano = ""
@@ -222,6 +333,7 @@ export default {
                for (var i = 0; i < res.data.length; i++) {      
                     let row = {code:res.data[i].code,placa:res.data[i].placa,year:res.data[i].ano,marca:res.data[i].marca,modelo:res.data[i].modelo,capVol:res.data[i].cap_carga_vol,capPeso:res.data[i].cap_carga_kg,date:res.data[i].created_date}
                     this.itemsTruck.push(row);
+                    this.auxTruckInfo.push(res.data[i])
                 }
                 console.log(res.status)
             } catch (error) {

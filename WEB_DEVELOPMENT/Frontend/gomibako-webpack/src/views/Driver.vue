@@ -87,7 +87,7 @@ import Swal from 'sweetalert2';
 export default {
     data(){
         return {
-            userlogged: JSON.parse(localStorage.getItem('userdata')),
+            userlogged: JSON.parse(sessionStorage.getItem('userdata')),
             formDriver: {
                 firstname: '',
                 lastname:'',

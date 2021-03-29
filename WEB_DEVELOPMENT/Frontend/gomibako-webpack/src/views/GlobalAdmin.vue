@@ -1,56 +1,107 @@
 <template>
     <div class="adminpanel">
-        <b-container>
+        <b-container fluid>
             <b-tabs content-class="mt-3" justified>
 
                 <b-tab title="Listado" active>
+                    <b-container fluid>
+                        <b-tabs>
+                            <b-tab title="Empresas" active>
+                                <b-jumbotron class="jumbotron pt-4">
+                                    <div class="card mb-4">
+                                            <div class="card-body">
+                                            <h5 class="h5 text-gray-800 my-0"><strong> LISTADO DE EMPRESAS </strong></h5>
+                                            </div>
+                                        </div>
+
+                                        <b-container style="display: flex;justify-content: center;">
+                                            <b-input-group size="md" class="mb-4 w-50">
+                                            <b-form-input v-model="filterCompany" type="search" id="filterInput" placeholder="Escribe para buscar"></b-form-input>
+                                            </b-input-group>
+                                        </b-container>
+                                    
+
+                                        <b-col cols="12">
+                                            <div class="card ">  
+                                                <div class="card-body">
+                                                    <b-table responsive="sm" borderless hover :items="itemsCompany" :fields="fieldsCompany" head-variant="light" selectable
+                                                        select-mode="single" :filter="filterCompany"
+                                                        :filter-included-fields="filterOnCompany">
+
+                                                        <template #cell(optsCompa)="row">
+                                                            <b-button size="sm"  class="mr-1">Editar</b-button>
+                                                            <b-button size="sm"  class="mr-1">Eliminar</b-button>
+                                                        </template>
+                                                      
+
+
+                                                    </b-table>
+                                                </div>
+                                            </div>
+                                        </b-col>
+
+                                </b-jumbotron>
+                            </b-tab>
+                            <b-tab title="Usuarios" >
+                            </b-tab>
+                            <b-tab title="Basureros">
+                            </b-tab>
+
+                        </b-tabs>
+                    </b-container>
+                  
 
                 </b-tab>
 
                 <b-tab title="[+] Empresa" >
-                    <h4 class="mt-4"> INFORMACION EMPRESA </h4>
-                    <hr class="line">
+                    <b-container>
+                        <h4 class="mt-4"> INFORMACION EMPRESA </h4>
+                        <hr class="line">
 
-                    <b-form @submit.prevent="addCompany" v-if="show">
+                        <b-form @submit.prevent="addCompany" v-if="show">
 
-                        <b-form-group label="RNC:" label-for="inputRNC">
-                            <b-input id="inputRNC" v-model="formCompany.rnc" required placeholder="Ej.:654321">
-                            </b-input>
-                        </b-form-group>
+                            <b-form-group label="RNC:" label-for="inputRNC">
+                                <b-input id="inputRNC" v-model="formCompany.rnc" required placeholder="Ej.:654321">
+                                </b-input>
+                            </b-form-group>
 
-                        <b-form-group label="Nombre de la empresa:" label-for="inputNameComp">
-                            <b-form-input id="inputNameComp" v-model="formCompany.name" required placeholder="Ej.: Gomibako.SRL">
-                            </b-form-input>
-                        </b-form-group>
+                            <b-form-group label="Nombre de la empresa:" label-for="inputNameComp">
+                                <b-form-input id="inputNameComp" v-model="formCompany.name" required placeholder="Ej.: Gomibako.SRL">
+                                </b-form-input>
+                            </b-form-group>
 
-                        <b-form-group label="Provincia:" label-for="inputProvi">
-                            <b-form-select id="inputProvi" v-model="formCompany.provincia" :options='provinciaList' required>
-                            </b-form-select>
-                        </b-form-group>
+                            <b-form-group label="Provincia:" label-for="inputProvi">
+                                <b-form-select id="inputProvi" v-model="formCompany.provincia" :options='provinciaList' required>
+                                </b-form-select>
+                            </b-form-group>
 
-                        <b-form-group label="Direcion:" label-for="inputAddress">
-                            <b-form-input id="inputAddress" v-model="formCompany.address" required
-                                placeholder="Ej.: Av. 27 de febrero, Santiago de los caballeros"></b-form-input>
-                        </b-form-group>
+                            <b-form-group label="Direcion:" label-for="inputAddress">
+                                <b-form-input id="inputAddress" v-model="formCompany.address" required
+                                    placeholder="Ej.: Av. 27 de febrero, Santiago de los caballeros"></b-form-input>
+                            </b-form-group>
 
-                        <b-form-group class="mb-4" label="Ubicacion:" >
-                            <h5 id="coordinatesCompa" class="coordinates"><b-badge variant="primary"></b-badge></h5>
-                            <div class="card shadow">
-                                <div class="card-body">
-                                    <div id="mapCompa" style="height: 350px;
-                                width: 100%;"></div>
+                            <b-form-group class="mb-4" label="Ubicacion:" >
+                                <h5 id="coordinatesCompa" class="coordinates"><b-badge variant="primary"></b-badge></h5>
+                                <div class="card shadow">
+                                    <div class="card-body">
+                                        <div id="mapCompa" style="height: 350px;
+                                    width: 100%;"></div>
+                                    </div>
                                 </div>
-                            </div>
 
-                        </b-form-group>
+                            </b-form-group>
 
-                        <b-button class="mr-2" type="submit" variant="primary">Registrar</b-button>
-                        <b-button @click="onResetCompany" variant="danger">Cancelar</b-button>
-                    </b-form>
+                            <b-button class="mr-2" type="submit" variant="primary">Registrar</b-button>
+                            <b-button @click="onResetCompany" variant="danger">Cancelar</b-button>
+                        </b-form>
+
+                    </b-container>
+                    
                 </b-tab>
 
                 <b-tab title="[+] Usuario a empresa">
-                    <h4 class="mt-4"> INFORMACION USUARIO </h4>
+                    <b-container>
+                        <h4 class="mt-4"> INFORMACION USUARIO </h4>
                     <hr class="line">
 
                     <b-form @submit.prevent="addUser" v-if="show">
@@ -76,10 +127,13 @@
                         <b-button class="mr-2" type="submit" variant="primary">Aplicar</b-button>
                         <b-button @click="onResetUser" variant="danger">Cancelar</b-button>
                     </b-form>
+                    </b-container>
+                    
                 </b-tab>
 
                 <b-tab title="[+] Basurero">
-                    <h4 class="mt-4"> INFORMACION BASURERO </h4>
+                    <b-container>
+                        <h4 class="mt-4"> INFORMACION BASURERO </h4>
                     <hr class="line">
 
                     <b-form @submit.prevent="addBasurero" v-if="show">                       
@@ -126,7 +180,8 @@
                         <b-button @click="onResetBasurero" variant="danger">Cancelar</b-button>
 
                     </b-form>
-
+                    </b-container>
+                    
                 </b-tab>
            
             </b-tabs>
@@ -144,7 +199,7 @@ import Swal from 'sweetalert2';
 export default {
     data() {
         return {
-            userlogged: JSON.parse(localStorage.getItem('userdata')),
+            userlogged: JSON.parse(sessionStorage.getItem('userdata')),
             formCompany: {
                 rnc: '',
                 name: '',
@@ -177,6 +232,47 @@ export default {
                 ],
             show: true,
             accessToken: 'pk.eyJ1IjoiYW50aG9ueXNha2EiLCJhIjoiY2tnbjBrZWR4MGkwNDJ0cGczb2UxNTE4YiJ9.WsEmhirejFVApuNz9Ivtlw',
+
+            filterCompany: null,
+            itemsCompany: [],
+            fieldsCompany:[
+                {
+                    key: 'rnc',
+                    label: 'RNC',
+                    sortable: true
+                },
+                {
+                    key: 'name',
+                    label: 'Nombre',
+                    sortable: true
+                },
+                {
+                    key: 'provincia',
+                    label: 'Provincia',
+                    sortable: true,
+                },
+                {
+                    key: 'address',
+                    label: 'Direccion',
+                    sortable: true,
+                },
+                {
+                    key: 'coordinates',
+                    label: 'Coords',
+                    sortable: true,
+                },
+                {
+                    key: 'created_date',
+                    label: 'Fecha Registro',
+                    sortable: true,
+                },
+                {
+                    key: 'optsCompa',
+                    label: 'Opciones',
+                   
+                },
+            ]
+    
         }
     },
     methods: {
@@ -290,6 +386,9 @@ export default {
 
                 for (var i = 0; i < res.data.length; i++) {
                     this.listAvailableCompanies.push("NOMBRE: " + res.data[i].name + " - RNC:" + res.data[i].rnc)        
+                    let row = {rnc:res.data[i].rnc,name:res.data[i].name,provincia:res.data[i].provincia,address:res.data[i].address,
+                                coordinates:res.data[i].coordinates,created_date:res.data[i].created_date}
+                    this.itemsCompany.push(row);
                 }
                 console.log(res.status)
             } catch (error) {

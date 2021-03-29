@@ -9,8 +9,8 @@ Vue.use(Vuex)
 export default new Vuex.Store({
   state: {
     status: '',
-    token: localStorage.getItem('token') || '',
-    user : localStorage.getItem('userdata') || {'default':'default'},
+    token: sessionStorage.getItem('token') || '',
+    user : sessionStorage.getItem('userdata') || {'default':'default'},
     logged: false
   },
   mutations: {
@@ -41,16 +41,16 @@ export default new Vuex.Store({
           .then(resp => {
             const token = resp.data.token
             const userr = resp.data.user[0]
-            localStorage.setItem('userdata', JSON.stringify(userr))
-            localStorage.setItem('token', token)
+            sessionStorage.setItem('userdata', JSON.stringify(userr))
+            sessionStorage.setItem('token', token)
             axios.defaults.headers.common['Authorization'] = token
             commit('auth_success', token, userr)
             resolve(resp)
           })
           .catch(err => {
             commit('auth_error')
-            localStorage.removeItem('userdata')
-            localStorage.removeItem('token')
+            sessionStorage.removeItem('userdata')
+            sessionStorage.removeItem('token')
             reject(err)
           })
         })
@@ -58,8 +58,8 @@ export default new Vuex.Store({
     logout({commit}){
         return new Promise((resolve, reject) => {
           commit('logout')
-          localStorage.removeItem('token')
-          localStorage.removeItem('userdata')
+          sessionStorage.removeItem('token')
+          sessionStorage.removeItem('userdata')
           console.log("BORRe")
           this.state.logged = false
           delete axios.defaults.headers.common['Authorization']

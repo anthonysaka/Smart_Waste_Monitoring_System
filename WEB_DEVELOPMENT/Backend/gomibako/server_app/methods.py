@@ -314,6 +314,21 @@ class MethodsDatabase:
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
             return False
+    
+    def modify_truck(code,ano,marca,modelo,cap_kg,cap_vol):
+        try:
+            conn = Connectiondb.getConnectionToPostgre()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+            cur.execute('UPDATE public.truck SET ano=%s,marca=%s,modelo=%s,cap_carga_kg=%s,cap_carga_vol=%s WHERE code = %s;',(ano,marca,modelo,cap_kg,cap_vol,code))
+            
+            conn.commit()
+            cur.close()
+            conn.close()
+            return True
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False
 
     def get_company_list_truck(rncComp):
         try:
@@ -375,6 +390,21 @@ class MethodsDatabase:
             cur.close()
             conn.close()
             return result
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False
+
+    def assign_route(idr,username,status):
+        try:
+            conn = Connectiondb.getConnectionToPostgre()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+            cur.execute('UPDATE public.routes SET driver_username = %s, status = %s WHERE id = %s;',(username,status,idr))
+            
+            conn.commit()
+            cur.close()
+            conn.close()
+            return True
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
             return False

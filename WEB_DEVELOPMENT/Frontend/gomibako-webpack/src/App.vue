@@ -95,6 +95,12 @@
 import io from 'socket.io-client';
 var socket = io.connect("http://localhost:5000")
 import Swal from 'sweetalert2';
+import Vue from 'vue';
+import VueToast from 'vue-toast-notification';
+import 'vue-toast-notification/dist/theme-sugar.css';
+Vue.use(VueToast);
+import axios from 'axios';
+const API_URL = process.env.API_URL;
 
 export default {
   data(){
@@ -117,42 +123,58 @@ export default {
         console.log(value)
         this.userlogged = value
       },
-      showToast(data) {
-    
-        if (data.code == '1'){
-          Swal.fire({
-            position: 'top-end',
-            icon: 'warning',
-            title: 'FULL',
-            text: data.devName,
-            showConfirmButton: false,
-            timerProgressBar: true,
-            toast: true,
-            timer: 5000,
-            didOpen: (toast) => {
-              toast.addEventListener('mouseenter', Swal.stopTimer)
-              toast.addEventListener('mouseleave', Swal.resumeTimer)
-            }
-          })
+      async showToast(data) {
+       // Eliminar 2da condicion condicion para considerar los sensores simulados para las alertas de estados
+        if(sessionStorage.getItem('userdata') !=  null && data.devName == 'BA000014'){
+           if (data.code == '1'){
+           Vue.$toast.open({
+                  message: "Sensor FULL! - "+data.devName,
+                  type: "warning",
+                  position:"top-right",
+                  duration: 5000,
+                  dismissible: true
+                })
+
+          try {
+            var res = null;
+            res = await axios.get(`${API_URL}/notiemail`, {
+                                                          params: {
+                                                            title: 'BASURERO FULL',
+                                                            body: "BASURERO:"+data.devName+"\nStatus: FULL\n",
+                                                            email: JSON.parse(sessionStorage.getItem('userdata')).email
+                                                          }
+                                                        });
+          } catch (error) {
+            console.log(error)
+          }
         } else {
-          Swal.fire({
-            position: 'top-end',
-            icon: 'error',
-            title: 'OVERLOAD',
-            text: data.devName,
-            showConfirmButton: false,
-            timerProgressBar: true,
-            toast: true,
-            timer: 5000,
-            didOpen: (toast) => {
-              toast.addEventListener('mouseenter', Swal.stopTimer)
-              toast.addEventListener('mouseleave', Swal.resumeTimer)
-            }
-          })
+             Vue.$toast.open({
+                  message: "Sensor OVERLOAD! - "+data.devName,
+                  type: "error",
+                  position:"top-right",
+                  duration: 5000,
+                  dismissible: true
+                })
           
+          try {
+            var res = null;
+            res = await axios.get(`${API_URL}/notiemail`, {
+                                                          params: {
+                                                            title: 'BASURERO OVERLOAD',
+                                                            body: "BASURERO:"+data.devName+"\nStatus: OVERLAOD\n",
+                                                            email: this.userlogged.email
+                                                          }
+                                                        });
+          } catch (error) {
+            console.log(error)
+          }
         }
+
+        }
+       
         
-      }
+      },
+      
 
     },
     created: function () {
@@ -168,7 +190,7 @@ export default {
     socket.on("mqtt_message", fetchedData => {
                     var data = JSON.parse(fetchedData)
                     this.showToast(data)
-                })
+            })
     
   },
 

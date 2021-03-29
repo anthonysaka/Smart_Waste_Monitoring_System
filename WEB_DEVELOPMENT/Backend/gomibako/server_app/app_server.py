@@ -66,6 +66,7 @@ socketio = SocketIO(app,cors_allowed_origins="*")
 @mqtt.on_message()
 def handle_mqtt_message(client, userdata, message):
     dict_data=json.loads(message.payload)
+    print(dict_data)
 
     device_eui = str(dict_data['devEUI'])
     device_name = str(dict_data['deviceName'])
@@ -291,6 +292,7 @@ def api_dustbin(loadtype):
 def api_dustbin_data(typeget):
     if request.method == 'GET' and typeget == 0:
         namebin = request.args.get('namebin')
+        print(namebin)
         data = MethodsDatabase.get_specific_last_dustbin_data(namebin)
 
         if data is not None:
@@ -361,7 +363,7 @@ def modify_default_credentials():
         else:
             abort(500,description="Error en la base de datos")
       
-@app.route("/gomibako/internalapi/1.0/truck",methods=['POST','GET'])
+@app.route("/gomibako/internalapi/1.0/truck",methods=['POST','GET','PUT'])
 def api_truck():
     if request.method == 'POST':
         placa = request.json['placa']
@@ -386,6 +388,19 @@ def api_truck():
             return jsonify({'code':404,'response':'No hay camiones registrados!'}),404
         else:
             abort(500,description="Error en la base de datos")
+    elif request.method == 'PUT':
+        code = request.json['code']
+        ano = request.json['ano']
+        marca = request.json['marca']
+        modelo = request.json['model']
+        cap_carga_kg = request.json['cap_kg']
+        cap_carga_vol = request.json['cap_vol']
+
+        if(MethodsDatabase.modify_truck(code,ano,marca,modelo,cap_carga_kg,cap_carga_vol)):
+            return jsonify({'code':201,'response':"Modificaciones realizadas con exito"}),201
+        else:
+            abort(500,description="Error en la base de datos")
+
 
 @app.route("/gomibako/internalapi/1.0/smartroutes",methods=['GET'])
 def get_smart_routes():
@@ -404,7 +419,7 @@ def get_smart_routes():
         solution = generate_smart_routes(distance_matrix,demands,truck_capacities,cant_truck)
         return jsonify({'code':200,'solution':solution}),200
 
-@app.route("/gomibako/internalapi/1.0/saveroutes",methods=['POST'])
+@app.route("/gomibako/internalapi/1.0/routes",methods=['POST','GET','PUT'])
 def save_routes():
     if request.method == 'POST':
         rnc = request.json['rncCompa']
@@ -416,10 +431,7 @@ def save_routes():
             return jsonify({'code':201,'response':'Guardado con exito'}),201
         else:
             abort(500,description="Error en la base de datos")
-        
-@app.route("/gomibako/internalapi/1.0/loadroutes",methods=['GET'])
-def load_routes():
-    if request.method == 'GET':
+    elif request.method == 'GET':
         rncComp = request.args.get('rncComp')
 
         listRoutes = MethodsDatabase.load_routes(rncComp)
@@ -430,6 +442,31 @@ def load_routes():
             return jsonify({'code':404,'response':'No hay Rutas Registradas!'}),404
         else:
             abort(500,description="Error en la base de datos")
+    elif request.method == 'PUT':
+       
+        usernameDriver = request.json['username_driver']
+        status = request.json['status']
+        idr = request.json['id']
+
+        if(MethodsDatabase.assign_route(idr,usernameDriver,status)):
+            return jsonify({'code':201,'response':"Ruta asignada con exito"}),201
+        else:
+            abort(500,description="Error en la base de datos")
+
+@app.route("/gomibako/internalapi/1.0/notiemail",methods=['GET'])
+def email_notification():
+
+    if request.method == 'GET':
+        email = request.args.get('email')
+        title = request.args.get('title')
+        body = request.args.get('body')
+
+        msg = Message('GOMIBAKO TEAM COMPANY - Notifications', sender = 'gomibakoteamcompany@gmail.com', recipients = [str(email)])
+        msg.body = "***** ALERTA - " + title +"*****\n\n" + body +"\nSaludos,\nGOMIBAKO TEAM"
+        mail.send(msg)
+       
+
+
 
         
         

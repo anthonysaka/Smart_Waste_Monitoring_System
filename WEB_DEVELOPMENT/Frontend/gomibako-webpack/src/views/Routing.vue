@@ -54,7 +54,7 @@
        <b-jumbotron class="jumbotron pt-4">
            <div class="card mb-4">
                 <div class="card-body">
-                <h5 class="h5 text-gray-800 my-0"><strong> LISTADO DE RUTAS </strong></h5>
+                <h5 class="h5 text-gray-800 my-0"><strong> LISTADO DE RUTAS SIN ASIGNAR </strong></h5>
                 </div>
             </div>
 
@@ -98,6 +98,9 @@
                         <b-modal :id="infoModal.id" :title="infoModal.title" ok-only size="lg" @hide="resetInfoModal">
                             <h3 style="color: black;"><strong> Detalles de Ruta </strong></h3>
 
+                            <h5 style="color: black;"><strong>[-] Listado de basureros:</strong></h5>
+                            <p style="color: black;">{{this.infoModal.content.bins}}</p>
+
                             <h5 style="color: black;"><strong>[-] Listado de coordenadas:</strong></h5>
                             <p style="color: black;">{{this.infoModal.content.coords}}</p>
 
@@ -117,12 +120,87 @@
                             <h3 style="color: black;"><strong> Asignacion de Ruta </strong></h3>
                             <hr>
 
+                            <h4 style="color: black;"><strong> Detalles de Ruta </strong></h4>
+
+                            <h5 style="color: black;"><strong>[-] ID:</strong></h5>
+                            <p style="color: black;">{{this.asignarModal.idRoute}}</p>
+
+                            <h5 style="color: black;"><strong>[-] Listado de basureros:</strong></h5>
+                            <p style="color: black;">{{this.infoModal.content.bins}}</p>
+
+                            <h5 style="color: black;"><strong>[-] Listado de coordenadas:</strong></h5>
+                            <p style="color: black;">{{this.asignarModal.content.coords}}</p>
+
+                            <h5 style="color: black;"><strong>[-] Camion correspondiente:</strong></h5>
+                            <p style="color: black;">{{this.asignarModal.content.truck}}</p>
+
+                            <h5 style="color: black;"><strong>[-] Total distancia (metros):</strong></h5>
+                            <p style="color: black;">{{this.asignarModal.content.total_dist}}</p>
+
+                            <h5 style="color: black;"><strong>[-] Total volumen (pies^3):</strong></h5>
+                            <p style="color: black;">{{this.asignarModal.content.total_volumen}}</p>
+
                             <h5 style="color: black;"><strong>[-] Elegir chofer: </strong></h5>
                             <div class="d-flex justify-content- mb-4">
                                 <b-form-select searchable="Search here.." v-model="selected" :options="listDriver" class="mb- mr-4"
                                         value-field="item" text-field="name" disabled-field="notEnabled"></b-form-select>
                             </div> 
+                          
 
+                             <b-button class="mt-4" @click="setRouteToDriver()" variant="primary">Asignar</b-button>
+
+                            
+                        </b-modal>
+                    </div>
+                </div>
+            </b-col>
+
+       </b-jumbotron>
+
+        <b-jumbotron class="jumbotron pt-4">
+           <div class="card mb-4">
+                <div class="card-body">
+                <h5 class="h5 text-gray-800 my-0"><strong> LISTADO DE RUTAS ASIGNADAS/COMPLETADAS </strong></h5>
+                </div>
+            </div>
+
+            <b-container style="display: flex;justify-content: center;">
+                <b-input-group size="md" class="mb-4 w-50">
+                <b-form-input v-model="filterR" type="search" id="filterInput" placeholder="Escribe para buscar"></b-form-input>
+                </b-input-group>
+            </b-container>
+         
+
+            <b-col cols="12">
+                <div class="card ">  
+                    <div class="card-body">
+                        <b-table responsive="sm" borderless hover :items="itemsRC" :fields="fieldsRC" head-variant="light" selectable
+                            select-mode="single" :filter="filterR"
+                            :filter-included-fields="filterOnR">
+
+                            <template #cell(routeInfoC)="row">
+                                <b-button size="sm" @click="info(row.item, row.index, $event.target)" class="mr-1">Info Ruta</b-button>
+                            </template>
+                        </b-table>
+
+                    <!-- Info modal -->
+                        <b-modal :id="infoModal.id+'C'" :title="infoModal.title" ok-only size="lg" @hide="resetInfoModal">
+                            <h3 style="color: black;"><strong> Detalles de Ruta </strong></h3>
+
+                            <h5 style="color: black;"><strong>[-] Listado de basureros:</strong></h5>
+                            <p style="color: black;">{{this.infoModal.content.bins}}</p>
+
+                            <h5 style="color: black;"><strong>[-] Listado de coordenadas:</strong></h5>
+                            <p style="color: black;">{{this.infoModal.content.coords}}</p>
+
+                            <h5 style="color: black;"><strong>[-] Camion correspondiente:</strong></h5>
+                            <p style="color: black;">{{this.infoModal.content.truck}}</p>
+
+                            <h5 style="color: black;"><strong>[-] Total distancia (metros):</strong></h5>
+                            <p style="color: black;">{{this.infoModal.content.total_dist}}</p>
+
+                            <h5 style="color: black;"><strong>[-] Total volumen (pies^3):</strong></h5>
+                            <p style="color: black;">{{this.infoModal.content.total_volumen}}</p>
                             
                         </b-modal>
                     </div>
@@ -152,7 +230,7 @@ mapboxgl.accessToken = 'pk.eyJ1IjoiYW50aG9ueXNha2EiLCJhIjoiY2tnbjBrZWR4MGkwNDJ0c
 export default {
     data(){
         return{
-            userlogged: JSON.parse(localStorage.getItem('userdata')),
+            userlogged: JSON.parse(sessionStorage.getItem('userdata')),
             accessToken: 'pk.eyJ1IjoiYW50aG9ueXNha2EiLCJhIjoiY2tnbjBrZWR4MGkwNDJ0cGczb2UxNTE4YiJ9.WsEmhirejFVApuNz9Ivtlw',
             geoJson: null,
 
@@ -234,11 +312,6 @@ export default {
 
             fieldsR: [
                 {
-                    key: 'selected',
-                    label: '[*]',
-                    sortable: true
-                }, 
-                {
                     key: 'id',
                     label: 'ID',
                     sortable: true
@@ -264,6 +337,40 @@ export default {
             ],
             itemsR: [ ],
 
+            fieldsRC: [
+                {
+                    key: 'id',
+                    label: 'ID',
+                    sortable: true
+                },
+                {
+                    key: 'routeInfoC',
+                    label: 'DETALLES RUTA',
+                },
+                {
+                    key: 'dateCreated',
+                    label: 'FECHA CREADA',
+                    sortable: true,
+                },
+                {
+                    key: 'status',
+                    label: 'STATUS',
+                    sortable: true,
+                },
+                {
+                    key: 'driver',
+                    label: 'CHOFER',
+                    sortable: true,
+                },
+                {
+                    key: 'completed_date',
+                    label: 'FECHA Compl.',
+                    sortable: true,
+                },
+            ],
+               
+            itemsRC: [ ],
+
             infoModal: {
                 id: 'info-modal',
                 title: '',
@@ -272,13 +379,21 @@ export default {
             asignarModal: {
                 id: 'asignar-modal',
                 title: '',
-                content: ''
+                content: '',
+                idRoute:''
             },
 
             filter: null,
             filterOn:[],
+            filterR: null,
+            filterOnR:[],
             auxRouteInfo: [],
-            listDriver: []
+            listDriver: [],
+            selected: null,
+            idR: '',
+            auxNameBins: [],
+            auxlistNameBinSol: [],
+            auxListCoordDraw:[]
         }
     },
     methods:{
@@ -295,9 +410,22 @@ export default {
             }
            
         },
+        async setRouteToDriver(){
+            let idRoute = this.idR
+            let user = this.selected.split('-')[1]
+            try {
+                var res = await axios.put(`${API_URL}/routes`,{ id: idRoute, username_driver: user, status: 'Asignada'});
+                console.log(res.status)
+            } catch (error) {
+                 console.log(error)
+            }
+
+
+        },
         info(item, index, button) {
+            console.log(this.auxRouteInfo[0])
             this.infoModal.title = `Row index: ${index}`
-            this.infoModal.content = this.auxRouteInfo[index]
+            this.infoModal.content = this.auxRouteInfo[index].info_route
             this.$root.$emit('bv::show::modal', this.infoModal.id, button)
         },
         resetInfoModal() {
@@ -305,13 +433,17 @@ export default {
             this.infoModal.content = ''
         },
         asignar(item, index, button) {
-            this.infoModal.title = `Row index: ${index}`
-            this.infoModal.content = this.auxRouteInfo[index]
+            this.idR = this.auxRouteInfo[index].id
+            this.asignarModal.title = `Row index: ${index}`
+            this.asignarModal.idRoute = this.auxRouteInfo[index].id
+            this.asignarModal.content = this.auxRouteInfo[index].info_route
             this.$root.$emit('bv::show::modal', this.asignarModal.id, button)
         },
         resetAsignarModal() {
             this.asignarModal.title = ''
             this.asignarModal.content = ''
+            this.asignarModal.idRoute = ''
+            this.idR = ''
         },
         async getNecessaryTruck(listVolumen){
             var volumenDemand = 0;
@@ -350,24 +482,28 @@ export default {
 
             if (mode == 1) {
                 for (let i = 0; i < this.selectedTableBin.length; i++) {
-                    volumenOnDemand.push(parseFloat(this.selectedTableBin[i].volumen));   
+                    volumenOnDemand.push(parseFloat(this.selectedTableBin[i].volumen));
+                    this.auxNameBins.push(this.selectedTableBin[i].name);
                 }
             } else {
                 
                 for (let i = 0; i < this.items.length; i++) {
                     if(this.items[i].mWaste == "plastico/metal/papel-carton"){
-                        console.log("entre volumen")
                         let aux = this.items[i].level.split("-")
                         if(parseInt(aux[0])>= 80) {
                             volumenOnDemand.push(parseFloat(this.items[i].volumen));
+                            this.auxNameBins.push(this.items[i].name);
                         } else if (parseInt(aux[1]) >= 80) {
                             volumenOnDemand.push(parseFloat(this.items[i].volumen));
+                             this.auxNameBins.push(this.items[i].name);
                         } else if (parseInt(aux[2]) >= 80){
                             volumenOnDemand.push(parseFloat(this.items[i].volumen));
+                             this.auxNameBins.push(this.items[i].name);
                         }
                     } else {
                         if(this.items[i].level >= 80) {
-                            volumenOnDemand.push(parseFloat(this.items[i].volumen));     
+                            volumenOnDemand.push(parseFloat(this.items[i].volumen));    
+                             this.auxNameBins.push(this.items[i].name); 
                         }
                             
                     }
@@ -507,11 +643,13 @@ export default {
                 console.log("auxRoutesByTruck")
                 console.log(auxRoutesByTruck)
                 console.log(auxRoutesByTruck.length)
+
                 
                 var smart_routes_solution = {rutas:[],totalDistance:res.data.solution.total_distance,totalVolumen:res.data.solution.total_volumen}
                 var x = 0
                 for (x = 0; x < auxRoutesByTruck.length; x++) {
                    smart_routes_solution.rutas.push(auxRoutesByTruck[x].split(":")) 
+                
                 }
                                
                
@@ -540,11 +678,15 @@ export default {
                     }
                     console.log(aux_Points)
                 }
-                         
+                var namesol = []
+                var auxname = []
                 var y = 0;
                 var j = 1;
                 for (y = 0; y < smart_routes_solution.rutas.length-1; y++) {
-                    for ( j = 1; j < smart_routes_solution.rutas[y].length-2; j++) {  
+                    for ( j = 1; j < smart_routes_solution.rutas[y].length-2; j++) {
+                        if(parseInt(smart_routes_solution.rutas[y][j]) != 0){
+                            auxname.push(this.auxNameBins[parseInt(smart_routes_solution.rutas[y][j])-1])
+                        }
                         if(j == smart_routes_solution.rutas[y].length-3){
                             smart_routes_solution.rutas[y][j] = aux_Points[0].coordinates[0]+","+aux_Points[0].coordinates[1]
                         } else {
@@ -552,10 +694,15 @@ export default {
                         }
                         
                     }  
+                    namesol.push(auxname)
+                    auxname = []
                 }
+
                 console.log("SOLUCION")
                 console.log(smart_routes_solution)
+                console.log(namesol)
                 this.auxSolutionRoutes = smart_routes_solution;
+                this.auxlistNameBinSol = namesol;
                 return smart_routes_solution;    
             } catch (error) {
                 console.log(error)
@@ -592,6 +739,7 @@ export default {
 
                     try {
                         //console.log(response)
+                        this.auxListCoordDraw = []
                         for (let x = 0; x < auxCoordRoutes.length; x++) {
 
                             var response = await mpbxDirectionClient.getDirections({
@@ -600,6 +748,17 @@ export default {
                                 //steps: true,
                                 geometries: "geojson",
                             }).send()
+                            
+                            console.log('ESTAS SON LAS DIRECCIONES')
+                            console.log(response.body)
+                            let aux = []
+                            for (let i = 0; i < response.body.routes[0].geometry.coordinates.length; i++) {
+                               aux.push({longitude:response.body.routes[0].geometry.coordinates[i][0],latitude:response.body.routes[0].geometry.coordinates[i][1]})
+                                
+                            }
+                            this.auxListCoordDraw.push(aux)
+                            console.log(this.auxListCoordDraw)
+
                             
                             this.drawSmartRoutes(response.body.routes[0].geometry,(this.routeid))  
                             this.routeid++;  
@@ -827,22 +986,37 @@ export default {
             }
             
         },
-        async loadRoutesTable(){
+        async loadRoutesSinAsignarTable(){
              try {
-                var res = await axios.get(`${API_URL}/loadroutes`,{ params: {rncComp: this.userlogged.rnc_compa}});
+                var res = await axios.get(`${API_URL}/routes`,{ params: {rncComp: this.userlogged.rnc_compa}});
 
                for (var i = 0; i < res.data.length; i++) {  
-                       
-                    let row = {id:res.data[i].id,dateCreated:res.data[i].created_date,status:res.data[i].status}
-                    this.itemsR.push(row);
-                    this.auxRouteInfo.push(res.data[i].info_route)
+                   if (res.data[i].status == 'Sin Asignar'){
+                        let row = {id:res.data[i].id,dateCreated:res.data[i].created_date,status:res.data[i].status}
+                        this.itemsR.push(row);
+                        this.auxRouteInfo.push(res.data[i])
+                   }
                 }
                 console.log(res.status)
-                return res.data;
             } catch (error) {
                 console.log(error)
             }
+        },
+        async loadRoutesTable(){
+             try {
+                var res = await axios.get(`${API_URL}/routes`,{ params: {rncComp: this.userlogged.rnc_compa}});
 
+               for (var i = 0; i < res.data.length; i++) {  
+                   if (res.data[i].status != 'Sin Asignar'){
+                        let row = {id:res.data[i].id,dateCreated:res.data[i].created_date,status:res.data[i].status,driver:res.data[i].driver_username,completed_date:res.data[i].completed_date}
+                        this.itemsRC.push(row);
+                        this.auxRouteInfo.push(res.data[i])
+                   }
+                }
+                console.log(res.status)
+            } catch (error) {
+                console.log(error)
+            }
         },
         onRowSelectedBin(items) {
             this.selectedTableBin = items;
@@ -875,13 +1049,14 @@ export default {
                        aux1.push(this.auxSolutionRoutes.rutas[i][j])
                 }
           
-                let body = {"route_info":{coords:aux1,total_dist:this.auxSolutionRoutes.rutas[i][this.auxSolutionRoutes.rutas[i].length-2],
-                                            total_volumen:this.auxSolutionRoutes.rutas[i][this.auxSolutionRoutes.rutas[i].length-1],truck:this.auxListTrucks[i].placa},
+                let body = {"route_info":{bins:this.auxlistNameBinSol[i],coords:aux1,total_dist:this.auxSolutionRoutes.rutas[i][this.auxSolutionRoutes.rutas[i].length-2],
+                                            total_volumen:this.auxSolutionRoutes.rutas[i][this.auxSolutionRoutes.rutas[i].length-1],truck:this.auxListTrucks[i].placa,
+                                            polylineDraw: this.auxListCoordDraw[i]},
                             "rncCompa":this.userlogged.rnc_compa,
                             "status": 'Sin Asignar',
                             }
                 console.log(body)
-                var res = await axios.post(`${API_URL}/saveroutes`, body);
+                var res = await axios.post(`${API_URL}/routes`, body);
                 console.log(res.status)
             }
         }
@@ -891,6 +1066,7 @@ export default {
         this.initmap();
         this.loadAvailableBins();
         this.loadAvailableTrucks();
+        this.loadRoutesSinAsignarTable();
         this.loadRoutesTable();
         this.loadDriver();
 

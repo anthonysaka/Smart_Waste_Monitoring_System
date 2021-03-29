@@ -145,6 +145,8 @@
   import 'vue-toast-notification/dist/theme-sugar.css';
   Vue.use(VueToast);
   const map = null;
+  var markerM = null;
+  var x = 0;
 
 
   export default {
@@ -155,7 +157,7 @@
     data() {
       return {
         accessToken: 'pk.eyJ1IjoiYW50aG9ueXNha2EiLCJhIjoiY2tnbjBrZWR4MGkwNDJ0cGczb2UxNTE4YiJ9.WsEmhirejFVApuNz9Ivtlw',
-        userlogged: JSON.parse(localStorage.getItem('userdata')),
+        userlogged: JSON.parse(sessionStorage.getItem('userdata')),
         geoJson: null,
         amountNormal: 0, 
         amountFull: 0, 
@@ -236,29 +238,34 @@
             type: 'FeatureCollection',
             features: auxFeatures,
           }
+          if(x == 1){markerM.remove();}
               // add markers to map
           this.geoJson.features.forEach(function (marker) {
-
+             x = 1;  
             // create a HTML element for each feature
             var el = document.createElement('div');
             if(marker.status == 1){
+              el.className = 'blank'
               el.className = 'marker_full';
             } else if (marker.status == 2){
+              el.className = 'blank'
               el.className = 'marker_overload';
             } else {
+              el.className = 'blank'
               el.className = 'marker'
             }
             
 
             // make a marker for each feature and add to the map
-            new mapboxgl.Marker(el)
+            markerM = new mapboxgl.Marker(el)
               .setLngLat(marker.geometry.coordinates)
               .setPopup(new mapboxgl.Popup({
                   offset: 25
                 }) // add popups
                 .setHTML('<h5>' + marker.properties.title + '</h5><strong>' + marker.properties.description + '</strong>'))
               .addTo(map);
-          });        
+          });      
+         
               
 
             },5000)
@@ -285,6 +292,9 @@
             try {
                 console.log(this.userlogged.rnc_compa)
                 var res = await axios.get(`${API_URL}/dustbin/1`,{ params: {rncComp: this.userlogged.rnc_compa}});
+                this.amountNormal = 0
+                this.amountFull = 0
+                this.amountOverload = 0
 
                 for (var i = 0; i < res.data.length; i++) {
                    if (res.data[i].status == 0) {
@@ -304,7 +314,8 @@
       async updateLastSeenDevices(){
         try {
           var res = null;
-          res = await axios.get(`${API_URL}/dustbin/1`, {
+           if(sessionStorage.getItem('userdata') !=  null){
+              res = await axios.get(`${API_URL}/dustbin/1`, {
                                                           params: {
                                                             rncComp: this.userlogged.rnc_compa
                                                           }
@@ -316,23 +327,40 @@
           const time = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
           const dateTime1 = date +' '+ time;
           let dateTime = new Date(dateTime1);
+            this.loadedDonut = true;
 
           for (var i = 0; i < res.data.length; i++) {
               let auxDateTime = res.data[i].active.split("G")[0];
               let aux = new Date(auxDateTime);
               let dif = (dateTime.getTime() - aux.getTime())/1000;
-              if(dif<30){
+              if(dif<35){
                 auxNumActive++;
               } else {
                 auxNumInactive++;
                 //send alert
-                Vue.$toast.open({
+                if(res.data[i].type != 'Tradicional - 1 contenedor'){ // Eliminar esta condicion para considerar los sensores simulados para las alertas de inactividad
+                  Vue.$toast.open({
                   message: "Sensor Inactivo!\n\n"+res.data[i].name,
-                  type: "warning",
+                  type: "info",
                   position:"top-right",
-                  duration: 5000,
+                  duration: 3000,
                   dismissible: true
                 })
+                /* try {
+                    var res1 = null;
+                    res1cl = await axios.get(`${API_URL}/notiemail`, {
+                                                                  params: {
+                                                                    title: 'SENSOR INACTIVO',
+                                                                    body: "BASURERO:"+res.data[i].name+"\nStatus: INACTIVO\n",
+                                                                    email: JSON.parse(sessionStorage.getItem('userdata')).email
+                                                                  }
+                                                                });
+                  } catch (error) {
+                    console.log(error)
+                  }*/
+
+                }
+                
           
               }
           }
@@ -349,7 +377,10 @@
                                 data: [auxNumActive,auxNumInactive]
                         }],
           }];
-        this.loadedDonut = true;
+      
+           
+           }
+         
         } catch (error) {
           
         }
@@ -358,14 +389,22 @@
             
         },
       },
+      created(){
+        this.updateLastSeenDevices();
+        setInterval(this.updateLastSeenDevices,30000)
+
+        this.loadDataResumeCardsDashboard();
+        setInterval(this.loadDataResumeCardsDashboard,10000)
+
+        this.loadAvailableBinsOnMap();
+      
+        
+
+      },
       mounted() {
         this.$emit('childToParent', this.userlogged)
-        this.loadAvailableBinsOnMap();
-        this.loadDataResumeCardsDashboard();
-        this.userlogged = JSON.parse(localStorage.getItem('userdata'));
-        
-        this.updateLastSeenDevices(); //poner esto ciclico y mover a app.vue
-       // setInterval(this.updateLastSeenDevices,10000)
+
+        this.userlogged = JSON.parse(sessionStorage.getItem('userdata'));
         
 
         if (this.userlogged.default_credentials == true) {
@@ -422,8 +461,8 @@
                     username,
                     password
                   })
-                localStorage.setItem('userdata', JSON.stringify(res1.data.user[0]))
-                this.userlogged = JSON.parse(localStorage.getItem('userdata'))
+                sessionStorage.setItem('userdata', JSON.stringify(res1.data.user[0]))
+                this.userlogged = JSON.parse(sessionStorage.getItem('userdata'))
               
             
               
