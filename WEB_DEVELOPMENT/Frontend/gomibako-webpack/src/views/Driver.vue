@@ -26,19 +26,52 @@
                                 select-mode="single" @row-selected="onRowSelected" :filter="filter"
                                 :filter-included-fields="filterOn">
 
-                                <!-- Example scoped slot for select state illustrative purposes -->
-                                <template #cell(selected)="{ rowSelected }">
-                                <template v-if="rowSelected">
-                                    <span aria-hidden="true">&check;</span>
-                                    <span class="sr-only">Selected</span>
-                                </template>
-                                <template v-else>
-                                    <span aria-hidden="true">&nbsp;</span>
-                                    <span class="sr-only">Not selected</span>
-                                </template>
+                                <template #cell(editK)="row">
+                                    <b-button size="sm" @click="edit(row.item, row.index, $event.target)" class="mr-1">Editar</b-button>
+                                    <b-button size="sm"   @click="deleteDriver(row.item, row.index, $event.target)" class="mr-1" variant='danger'>Eliminar</b-button>
                                 </template>
 
                             </b-table>
+                            
+                            <b-modal :id="editModal.id" :title="editModal.title"  hide-footer hide-header body-bg-variant="dark" header-bg-variant="dark" 
+                                header-text-variant="dark" size="lg" @hide="resetEditModal" >
+                            
+                                <b-container>
+                    <h4 class="mt-4"> INFORMACION REQUERIDA </h4>
+                    <hr class="line">
+
+                    <b-form @submit.prevent="editDriver">
+                        <b-form-group label="ID:" label-for="inputDriverID">
+                            <b-form-input id="inputDriverID" v-model="formDriver.id" required readonly placeholder="Ej.: ID">
+                            </b-form-input>
+                        </b-form-group>
+                         <b-form-group label="Username:" label-for="inputDriverUsername">
+                            <b-form-input id="inputDriverUsername" v-model="formDriver.username" required readonly placeholder="Ej.: username">
+                            </b-form-input>
+                        </b-form-group>
+                        <b-form-group label="Primer nombre:" label-for="inputDriverName">
+                            <b-form-input id="inputDriverName" v-model="formDriver.firstname" required placeholder="Ej.: Juan">
+                            </b-form-input>
+                        </b-form-group>
+
+                        <b-form-group label="Primer apellido:" label-for="inputDriverLastname">
+                            <b-form-input id="inputDriverLastname" v-model="formDriver.lastname" required placeholder="Ej.: Almonte">
+                            </b-form-input>
+                        </b-form-group>
+
+                        <b-form-group label="E-mail:" label-for="inputDriverEmail">
+                            <b-form-input id="inputDriverEmail" v-model="formDriver.email" type="email" required placeholder="Ej.: username@dominio.com">
+                            </b-form-input>
+                        </b-form-group>
+
+                        <b-button class="mr-2" type="submit" variant="primary">Guardar</b-button>
+                        <b-button @click="$bvModal.hide(editModal.id)" variant="danger">Cancelar</b-button>
+                        
+                    </b-form>
+                 </b-container>
+                            </b-modal>
+
+
                         </div>
                     </div>
                     </b-col>
@@ -51,6 +84,7 @@
                     <hr class="line">
 
                     <b-form @submit.prevent="addDriver">
+                        
                         <b-form-group label="Primer nombre:" label-for="inputDriverName">
                             <b-form-input id="inputDriverName" v-model="formDriver.firstname" required placeholder="Ej.: Juan">
                             </b-form-input>
@@ -92,13 +126,10 @@ export default {
                 firstname: '',
                 lastname:'',
                 email:'',
+                username:'',
+                id:''
             },
             fieldsDriver: [
-                {
-                    key: 'selected',
-                    label: '[*]',
-                    sortable: true
-                }, 
                 {
                     key: 'username',
                     label: 'USUARIO',
@@ -124,16 +155,68 @@ export default {
                     label: 'FECHA REGISTRO',
                     sortable: true,
                 },
+                {
+                    key: 'editK',
+                    label: 'Opciones',
+                },
             ],
             itemsDriver:[],
             selectedTable: null,
 
             filter: null,
             filterOn:[],
+            editModal: {
+                id: 'edit-modal',
+                title: '',
+                content: ''
+            },
+             auxDriverInfo: []
 
         }
     },
     methods:{
+         edit(item, index, button) {
+            this.editModal.title = `Row index: ${index}`
+            this.editModal.content = this.auxDriverInfo[index]
+            this.formDriver.id = this.auxDriverInfo[index].id
+            this.formDriver.username= this.auxDriverInfo[index].username
+            this.formDriver.firstname= this.auxDriverInfo[index].first_name
+            this.formDriver.lastname= this.auxDriverInfo[index].last_name
+            this.formDriver.email= this.auxDriverInfo[index].email
+            
+            this.$root.$emit('bv::show::modal', this.editModal.id, button)
+        },
+         resetEditModal() {
+            this.editModal.title = ''
+            this.editModal.content = ''
+         
+        },
+        async deleteDriver(item, index, button){
+            this.formDriver.id = this.auxDriverInfo[index].id
+                try{
+                 var res = await axios.delete(`${API_URL}/user`,
+                                            {
+                                                params:{"id":this.formDriver.id,}
+                                            });
+                console.log(res.status)
+                  Swal.fire(
+                    'Eliminado con exito!',
+                    res.response,
+                    'success'
+                ).then(function() {
+                  window.location = "/drivers"
+                });
+                } catch (error) {
+                    Swal.fire(
+                        'Uups, ha ocurrido un error!',
+                        '',
+                        'error'
+                    )
+                    console.log(error)
+                }
+
+
+        },
         async addDriver(evt) {
             try {
                 evt.preventDefault()
@@ -151,8 +234,11 @@ export default {
                     'Registrado con exito!',
                     '',
                     'success'
-                )
-                 this.onResetDriver();
+                ).then(function() {
+                     this.onResetDriver();
+                     this.loadDriver();
+                });
+                
                 
             } catch (error) {
                 Swal.fire(
@@ -171,12 +257,44 @@ export default {
                 for (var i = 0; i < res.data.length; i++) {      
                     let row = {username:res.data[i].username,email:res.data[i].email,firstname:res.data[i].first_name,lastname:res.data[i].last_name,date:res.data[i].created_date}
                     this.itemsDriver.push(row);
+                    this.auxDriverInfo.push(res.data[i]);
                 }
                 console.log(res.status)
             } catch (error) {
                 console.log(error)
             }
            
+        },
+        async editDriver(evt) {
+            try {
+                evt.preventDefault()
+                 var res = await axios.put(`${API_URL}/driver`,
+                                            {
+                                                "id":this.formDriver.id,
+                                                "firstname":this.formDriver.firstname,
+                                                "lastname":this.formDriver.lastname,
+                                                "email": this.formDriver.email,
+                                            });
+
+                console.log(res.status)
+               
+                Swal.fire(
+                    'Modificado con exito!',
+                    '',
+                    'success'
+                ).then(function() {
+                    window.location = "/drivers";
+                });
+                
+            } catch (error) {
+                Swal.fire(
+                    'Uups, ha ocurrido un error!',
+                    '',
+                    'error'
+                )
+                console.log(error)
+            }
+            
         },
         onResetDriver() {
             this.formDriver.firstname = ""

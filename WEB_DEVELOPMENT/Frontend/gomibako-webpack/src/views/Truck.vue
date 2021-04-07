@@ -29,12 +29,13 @@
                         
                                 <template #cell(editK)="row">
                                     <b-button size="sm" @click="edit(row.item, row.index, $event.target)" class="mr-1">Editar</b-button>
+                                    <b-button size="sm"   @click="deleteTruck(row.item, row.index, $event.target)" class="mr-1" variant='danger'>Eliminar</b-button>
                                 </template>
 
                             </b-table>
 
                              <!-- Edit modal -->
-                        <b-modal :id="editModal.id" :title="editModal.title"  hide-footer body-bg-variant="dark" header-bg-variant="dark" 
+                        <b-modal :id="editModal.id" :title="editModal.title"  hide-footer hide-header body-bg-variant="dark" header-bg-variant="dark" 
                             header-text-variant="dark" size="lg" @hide="resetEditModal" >
 
                      <b-container @submit.prevent="editTruck">
@@ -89,7 +90,7 @@
                             </b-row>
                             
                         <b-button class="mr-2" type="submit" variant="primary">Guardar</b-button>
-                        <b-button @click="onReset" variant="danger">Cancelar</b-button>
+                        <b-button @click="$bvModal.hide(editModal.id)" variant="danger">Cancelar</b-button>
                         
                         </b-form>
                     </b-container>
@@ -256,6 +257,32 @@ export default {
             this.editModal.content = ''
          
         },
+        async deleteTruck(item, index, button){
+            this.fcode = this.auxTruckInfo[index].code
+                try{
+                 var res = await axios.delete(`${API_URL}/truck`,
+                                            {
+                                                params:{"code":this.code,}
+                                            });
+                console.log(res.status)
+                  Swal.fire(
+                    'Eliminado con exito!',
+                    res.response,
+                    'success'
+                ).then(function() {
+                  window.location = "/drivers"
+                });
+                } catch (error) {
+                    Swal.fire(
+                        'Uups, ha ocurrido un error!',
+                        '',
+                        'error'
+                    )
+                    console.log(error)
+                }
+
+
+        },
         async addTruck() {
             try {
                 var res = await axios.post(`${API_URL}/truck`,
@@ -274,7 +301,10 @@ export default {
                     'Registrado con exito!',
                     '',
                     'success'
-                )
+                ).then(function() {
+                   this.loadAvailableTrucks();
+                   this.onReset()
+                });
             } catch (error) {
                 Swal.fire(
                     'Uups, ha ocurrido un error!',

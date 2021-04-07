@@ -38,9 +38,10 @@
                         </div>
 
                         <div class="d-flex justify-content-around">
-                            <b-button class="mt-4" @click="getDirectionsSmartRoutes(1)" variant="primary">Modo Manual</b-button>
-                            <b-button class="mt-4" @click="getDirectionsSmartRoutes(0)" variant="primary">Modo Auto</b-button>
-                            <b-button class="mt-4" @click="saveRoutes()" variant="primary" v-if="flagSave">Guardar</b-button>
+                            <b-button id="btnManual" class="mt-4" @click="getDirectionsSmartRoutes(1)" variant="primary"  :disabled='isDisable'>Modo Manual</b-button>
+                            <b-button id="btnAuto" class="mt-4" @click="getDirectionsSmartRoutes(0)" variant="primary" :disabled='isDisable'>Modo Auto</b-button>
+                            <b-button id="btnGuardar" class="mt-4" @click="saveRoutes()" variant="primary" :disabled="!flagSave">Guardar</b-button>
+                             <b-button  id="btnCancelar" class="mt-4" @click="cancelRoutes()" variant="danger" :disabled="!flagSave">Cancelar</b-button>
                         </div>
                      
                       
@@ -116,7 +117,7 @@
                         </b-modal>
 
                         <!-- Asignar modal -->
-                        <b-modal :id="asignarModal.id" :title="asignarModal.title" ok-only size="lg" @hide="resetAsignarModal">
+                        <b-modal :id="asignarModal.id" :title="asignarModal.title" hide-footer size="lg" @hide="resetAsignarModal">
                             <h3 style="color: black;"><strong> Asignacion de Ruta </strong></h3>
                             <hr>
 
@@ -126,7 +127,7 @@
                             <p style="color: black;">{{this.asignarModal.idRoute}}</p>
 
                             <h5 style="color: black;"><strong>[-] Listado de basureros:</strong></h5>
-                            <p style="color: black;">{{this.infoModal.content.bins}}</p>
+                            <p style="color: black;">{{this.asignarModal.content.bins}}</p>
 
                             <h5 style="color: black;"><strong>[-] Listado de coordenadas:</strong></h5>
                             <p style="color: black;">{{this.asignarModal.content.coords}}</p>
@@ -306,6 +307,7 @@ export default {
             auxrouteid:0,
 
             flagSave: false,
+            isDisable: false,
 
             auxSolutionRoutes: {},
             auxListTrucks: [],
@@ -416,8 +418,21 @@ export default {
             try {
                 var res = await axios.put(`${API_URL}/routes`,{ id: idRoute, username_driver: user, status: 'Asignada'});
                 console.log(res.status)
+                    Swal.fire(
+                                'Ruta asignada con exito!',
+                                '',
+                                'success'
+                            ).then(() => {
+                                this.loadRoutesTable() 
+                                //this.$root.$emit('hide::modal', this.asignarModal.id)
+                    });
             } catch (error) {
                  console.log(error)
+                     Swal.fire(
+                                'Error intentando asignar ruta!',
+                                '',
+                                'success'
+                            )
             }
 
 
@@ -766,6 +781,7 @@ export default {
                         }
 
                         this.flagSave = true;
+                        this.isDisable = true;
 
                     } catch (error) {
                         console.log(error)
@@ -1039,6 +1055,7 @@ export default {
             this.loadAvailableBinsOnMap(m);
         },
         async saveRoutes(){
+          
             var aux1 = []
             var aux = []
             console.log("SALVANDO PRUEBA")
@@ -1056,9 +1073,31 @@ export default {
                             "status": 'Sin Asignar',
                             }
                 console.log(body)
-                var res = await axios.post(`${API_URL}/routes`, body);
-                console.log(res.status)
+                try {
+                    var res = await axios.post(`${API_URL}/routes`, body);
+                    console.log(res.status)
+                    Swal.fire(
+                        'Rutas guardadas con exito!',
+                        '',
+                        'success'
+                    ).then(() => {
+                         this.$router.go(0)  
+                    });
+                  
+                } catch (error) {
+                    console.log(error);
+                    Swal.fire(
+                                'Error intentando guardar!',
+                                '',
+                                'error'
+                            )
+                    
+                }
+              
             }
+        },
+        cancelRoutes(){
+            this.$router.go(0)  
         }
     },
     mounted(){     

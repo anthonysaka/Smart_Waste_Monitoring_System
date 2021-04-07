@@ -114,7 +114,9 @@ export default {
     },
     methods: {
       logout: function () {
+        socket.disconnect()
         this.$store.dispatch('logout')
+
         .then(() => {
           this.$router.push('/login')
         })

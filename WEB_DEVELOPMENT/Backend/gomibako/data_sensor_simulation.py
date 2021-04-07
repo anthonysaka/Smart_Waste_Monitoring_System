@@ -9,8 +9,11 @@ def send_data_mqtt():
     broker_address="10.0.0.12" 
     client = mqtt.Client("P1") #create new instance
   
-    device_eui = ['a84041000181eaec','a84041000181eaff','b84041000181eaff','b84041000181eaaa','b84041000181ebbb','b84041000181ebbc','60c5a8fffe798f87']
-    device_name = ['BA000002',          'BA000003',          'BA000004',         'BA000005',    'BA000008',     'BA000009','BA000010']
+    #device_eui = ['a84041000181eaec','a84041000181eaff','b84041000181eaff','b84041000181eaaa','b84041000181ebbb','b84041000181ebbc','60c5a8fffe798f87']
+    #device_name = ['BA000002',          'BA000003',          'BA000004',         'BA000005',    'BA000008',     'BA000009','BA000010']
+    device_eui = ['a84041000181eaec']
+    device_name = ['BA000002']
+    
     lim = 5.50
     code = 0
     while True:
@@ -20,7 +23,8 @@ def send_data_mqtt():
                 random.seed(datetime.now())
                 temperature = round(random.uniform(32.00,40.00),2)
                 humidity= round(random.uniform(40.00,70.00),2)
-                lvlsingle = round(random.uniform(lim,90.00),2)
+                batteryLevel = round(100.00,2)
+                lvlsingle = round(random.uniform(lim,99.00),2)
                 volumen = round((((lvlsingle/100)*14.90)*(18.11)*(9.45)),2)
                 lim = lvlsingle
                 generated_date = datetime.now()
@@ -31,7 +35,7 @@ def send_data_mqtt():
                 else:
                     code = 0
 
-                random_sensor_data = {'devEUI':device_eui[i],'deviceName':device_name[i],'object':{'temperature':temperature,'humidity':humidity,'lvlsingle':lvlsingle,'volumen':volumen,'codeStatus':code,'nodeDate':generated_date}}
+                random_sensor_data = {'devEUI':device_eui[i],'deviceName':device_name[i],'object':{'temperature':temperature,'humidity':humidity,'batteryLevel':batteryLevel,'lvlsingle':lvlsingle,'volumen':volumen,'codeStatus':code,'nodeDate':generated_date}}
                 json_sensor_data = json.dumps(random_sensor_data,indent=4,default=str)
 
                 if(client.publish("application/11/device/"+device_name[i]+"/rx",json_sensor_data)):
@@ -40,7 +44,7 @@ def send_data_mqtt():
                     print("[*] Simulation Sensor Data Saved ERROR!\n")
         
         client.disconnect()
-        time.sleep(120.00)
+        time.sleep(30.00)
 
 def generated_data():
     Connectiondb.getConnectionToPostgre()

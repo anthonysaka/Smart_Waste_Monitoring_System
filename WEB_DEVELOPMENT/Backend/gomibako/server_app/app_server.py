@@ -126,7 +126,7 @@ def generator_random_default_username(firstname,lastname):
     return random_username
 
 #! ENDPOINT ROUTES
-@app.route("/gomibako/internalapi/1.0/clientCompany/<int:loadtype>",methods=['POST','GET'])
+@app.route("/gomibako/internalapi/1.0/clientCompany/<int:loadtype>",methods=['POST','GET','DELETE','PUT'])
 def api_client_company(loadtype):
     if request.method == 'POST' and loadtype == 0:
     
@@ -140,6 +140,24 @@ def api_client_company(loadtype):
             return jsonify({'code':201,'response':'Registrado con exito'}),201
         else:
             abort(500,description="Error en la base de datos")
+    elif request.method == 'PUT' and loadtype == 0:
+        rnc = request.json['rnc']
+        name = request.json['name']
+        provi = request.json['provincia']
+        address = request.json['address']
+
+        if(MethodsDatabase.modify_company(rnc,name,provi,address)):
+            return jsonify({'code':201,'response':"Modificaciones realizadas con exito"}),201
+        else:
+            abort(500,description="Error en la base de datos")
+
+    elif request.method == 'DELETE' and loadtype == 0:
+        rnc = request.args.get('rnc')
+        if(MethodsDatabase.delete_company(rnc)):
+            return jsonify({'code':201,'response':'Eliminado con exito'}),201
+        else:
+            abort(500,description="Error en la base de datos")
+
 
     elif request.method == 'GET' and loadtype == 0:
 
@@ -161,13 +179,13 @@ def api_client_company(loadtype):
         else:
             abort(500,description="Error en la base de datos")
     
-@app.route("/gomibako/internalapi/1.0/user",methods=['POST','GET'])
+@app.route("/gomibako/internalapi/1.0/user",methods=['POST','GET','PUT','DELETE'])
 def api_user():
     if request.method == 'POST':    
         email = request.json['email']
         firstname = request.json['firstname']
         lastname = request.json['lastname']
-        typeU = "Cliente"
+        typeU = request.json['typeU']
         rncComp = request.json['rncComp']
 
         username = str(generator_random_default_username(firstname,lastname))
@@ -180,15 +198,40 @@ def api_user():
             msg.body = "***** CREDENCIALES ***** \n\n Hey, este es tu usuario y contrasena por defecto:\n\n     " +"Usuario: " + username +"\n"  + "     Contrasena: " + password + "\n\nCuando inicie sesion, se le pedira que cambie el usuario y contrasena.\nSaludos,\nGOMIBAKO TEAM"
             mail.send(msg)
             
-            return jsonify({'code':201,'response':"Registrado con exito, usuario y contrasena enviado al emai.",'firstname':firstname, 
+            return jsonify({'code':201,'response':"Registrado con exito, usuario y contrasena enviado al email.",'firstname':firstname, 
                             'lastname':lastname,'email':email}),201
         else:
             abort(500,description="Error en la base de datos")
     
     elif request.method == 'GET':
-        return
+        listalluser = MethodsDatabase.get_list_all_user()
+        
+        if listalluser is not None:
+            return jsonify(listalluser),200
+        elif listalluser is None:
+            return jsonify({'code':404,'response':'No hay usuarios registrados!'}),404
+        else:
+            abort(500,description="Error en la base de datos")
+    elif request.method == 'PUT':
+        email = request.json['email']
+        firstname = request.json['firstname']
+        lastname = request.json['lastname']
+        xid = request.json['id']
 
-@app.route("/gomibako/internalapi/1.0/driver",methods=['POST','GET'])
+        if(MethodsDatabase.modify_driver(xid,firstname,lastname,email)):
+            return jsonify({'code':201,'response':"Modificaciones realizadas con exito"}),201
+        else:
+            abort(500,description="Error en la base de datos")
+    elif request.method == 'DELETE':
+        xid = request.args.get('id')
+        if(MethodsDatabase.delete_user(xid)):
+            return jsonify({'code':201,'response':'Eliminado con exito'}),201
+        else:
+            abort(500,description="Error en la base de datos")
+
+        
+
+@app.route("/gomibako/internalapi/1.0/driver",methods=['POST','GET','PUT'])
 def api_driver():
     if request.method == 'POST':    
         email = request.json['email']
@@ -203,11 +246,11 @@ def api_driver():
         print(password)
 
         if(MethodsDatabase.add_user(username,email,password,firstname,lastname,typeU,rncComp)):
-            msg = Message('GOMIBAKO TEAM - Credentials', sender = 'anthonysk2017@gmail.com', recipients = [str(email)])
+            msg = Message('GOMIBAKO TEAM COMPANY - Credentials', sender = 'gomibakoteamcompany@gmail.com', recipients = [str(email)])
             msg.body = "***** CREDENCIALES ***** \n\n Hey, este es tu usuario y contrasena por defecto:\n\n     " +"Usuario: " + username +"\n"  + "     Contrasena: " + password + "\n\nCuando inicie sesion, se le pedira que cambie el usuario y contrasena.\nSaludos,\nGOMIBAKO TEAM"
             mail.send(msg)
             
-            return jsonify({'code':201,'response':"Registrado con exito, usuario y contrasena enviado al emai.",'firstname':firstname, 
+            return jsonify({'code':201,'response':"Registrado con exito, usuario y contrasena enviado al email.",'firstname':firstname, 
                             'lastname':lastname,'email':email}),201
         else:
             abort(500,description="Error en la base de datos")
@@ -219,11 +262,23 @@ def api_driver():
         if listdrivercompany is not None:
             return jsonify(listdrivercompany),200
         elif listdrivercompany is None:
-            return jsonify({'code':404,'response':'No hay basureros registrados!'}),404
+            return jsonify({'code':404,'response':'No hay drivers registrados!'}),404
+        else:
+            abort(500,description="Error en la base de datos")
+    elif request.method == 'PUT':
+        email = request.json['email']
+        firstname = request.json['firstname']
+        lastname = request.json['lastname']
+        xid = request.json['id']
+
+        if(MethodsDatabase.modify_driver(xid,firstname,lastname,email)):
+            return jsonify({'code':201,'response':"Modificaciones realizadas con exito"}),201
         else:
             abort(500,description="Error en la base de datos")
 
-@app.route("/gomibako/internalapi/1.0/dustbin/<int:loadtype>",methods=['POST','GET'])
+        
+
+@app.route("/gomibako/internalapi/1.0/dustbin/<int:loadtype>",methods=['POST','GET','PUT'])
 def api_dustbin(loadtype):
     if request.method == 'POST' and loadtype == 0:
         deviceEui = request.json['deviceEui']
@@ -232,8 +287,7 @@ def api_dustbin(loadtype):
         descrip = request.json['descrip']
         mWaste = request.json['mWaste']
         coordinates = request.json['coordinates']
-        print(request.json)
-
+      
         if(MethodsDatabase.add_dustbin(deviceEui,typeD,descrip,rncComp,mWaste,coordinates)):
 
             if typeD == 'Reciclaje - 3 contenedores':
@@ -285,6 +339,19 @@ def api_dustbin(loadtype):
             return jsonify(listallbins),200
         elif listallbins is None:
             return jsonify({'code':404,'response':'No hay basureros registrados!'}),404
+        else:
+            abort(500,description="Error en la base de datos")
+
+    elif request.method == 'PUT' and loadtype == 0:
+        deviceEui = request.json['deviceeui']
+        rncComp = request.json['rncComp']
+        typeD = request.json['type']
+        descrip = request.json['description']
+        mWaste = request.json['material']
+        coordinates = request.json['coordinates']
+
+        if(MethodsDatabase.modify_bin(deviceEui,coordinates,descrip,typeD,mWaste,rncComp)):
+            return jsonify({'code':201,'response':"Modificaciones realizadas con exito"}),201
         else:
             abort(500,description="Error en la base de datos")
 
@@ -363,7 +430,7 @@ def modify_default_credentials():
         else:
             abort(500,description="Error en la base de datos")
       
-@app.route("/gomibako/internalapi/1.0/truck",methods=['POST','GET','PUT'])
+@app.route("/gomibako/internalapi/1.0/truck",methods=['POST','GET','PUT','DELETE'])
 def api_truck():
     if request.method == 'POST':
         placa = request.json['placa']
@@ -398,6 +465,13 @@ def api_truck():
 
         if(MethodsDatabase.modify_truck(code,ano,marca,modelo,cap_carga_kg,cap_carga_vol)):
             return jsonify({'code':201,'response':"Modificaciones realizadas con exito"}),201
+        else:
+            abort(500,description="Error en la base de datos")
+    
+    elif request.method == 'DELETE':
+        code = request.args.get('code')
+        if(MethodsDatabase.delete_truck(code)):
+            return jsonify({'code':201,'response':'Eliminado con exito'}),201
         else:
             abort(500,description="Error en la base de datos")
 

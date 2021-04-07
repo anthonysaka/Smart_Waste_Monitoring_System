@@ -147,6 +147,10 @@
   const map = null;
   var markerM = null;
   var x = 0;
+  import io from 'socket.io-client';
+  var socket = io.connect("http://localhost:5000");
+  var auxInterval = 0;
+  var resx = false;
 
 
   export default {
@@ -164,52 +168,60 @@
         amountOverload: 0,
         datacollectionDonut: [],
         loadedDonut: false,
+        map: null,
+        auxCount:0
        
       };
     },
     methods: {
       async loadAvailableBinsOnMap() {
         try {
-          console.log(this.userlogged.rnc_compa)
-          var res = null;
-          res = await axios.get(`${API_URL}/dustbin/1`, {
-            params: {
-              rncComp: this.userlogged.rnc_compa
-            }
-          });
-          var auxFeatures = [];
 
-          for (var i = 0; i < res.data.length; i++) {
-            let auxCoor = res.data[i].coordinates.split(",")
-            auxFeatures.push({
-              type: 'Feature',
-              status:res.data[i].status,
-              geometry: {
-                type: 'Point',
-                coordinates: [auxCoor[0], auxCoor[1]]
-              },
-              properties: {
-                title: res.data[i].name,
-                description: res.data[i].description,
+          if(this.auxCount == 0){
+              console.log(this.userlogged.rnc_compa)
+              var res = null;
+              res = await axios.get(`${API_URL}/dustbin/1`, {
+                params: {
+                  rncComp: this.userlogged.rnc_compa
+                }
+              });
+              var auxFeatures = [];
+              resx = true;
+
+              for (var i = 0; i < res.data.length; i++) {
+                let auxCoor = res.data[i].coordinates.split(",")
+                auxFeatures.push({
+                  type: 'Feature',
+                  status:res.data[i].status,
+                  geometry: {
+                    type: 'Point',
+                    coordinates: [auxCoor[0], auxCoor[1]]
+                  },
+                  properties: {
+                    title: res.data[i].name,
+                    description: res.data[i].description,
+                  }
+                })
               }
-            })
+
+              this.geoJson = {
+                type: 'FeatureCollection',
+                features: auxFeatures,
+              }
+
+              mapboxgl.accessToken = this.accessToken;
+              map = new mapboxgl.Map({
+                container: "map",
+                style: "mapbox://styles/mapbox/streets-v11",
+                center: [-70.703692, 19.415888],
+                zoom: 12,
+              });
+              this.map = map;
+
           }
-
-          this.geoJson = {
-            type: 'FeatureCollection',
-            features: auxFeatures,
-          }
-
-          mapboxgl.accessToken = this.accessToken;
-          map = new mapboxgl.Map({
-            container: "map",
-            style: "mapbox://styles/mapbox/streets-v11",
-            center: [-70.703692, 19.415888],
-            zoom: 12,
-          });
-
-          if (res != null) {
-            setInterval(async()=>{
+          
+          if (resx) {
+         //   setInterval(async()=>{
               var res = null;
           res = await axios.get(`${API_URL}/dustbin/1`, {
             params: {
@@ -240,7 +252,8 @@
           }
           if(x == 1){markerM.remove();}
               // add markers to map
-          this.geoJson.features.forEach(function (marker) {
+              console.log(this.geoJson)
+          this.geoJson.features.forEach((marker) => {
              x = 1;  
             // create a HTML element for each feature
             var el = document.createElement('div');
@@ -263,18 +276,21 @@
                   offset: 25
                 }) // add popups
                 .setHTML('<h5>' + marker.properties.title + '</h5><strong>' + marker.properties.description + '</strong>'))
-              .addTo(map);
+              .addTo(this.map);
           });      
          
               
 
-            },5000)
+          //  },5000)
           }
             
 
           
           // Add zoom and rotation controls to the map.
-          map.addControl(new mapboxgl.NavigationControl());
+          if(this.auxCount == 0){
+            this.map.addControl(new mapboxgl.NavigationControl());
+          }
+          
           
 
         } catch (error) {
@@ -338,20 +354,21 @@
               } else {
                 auxNumInactive++;
                 //send alert
-                if(res.data[i].type != 'Tradicional - 1 contenedor'){ // Eliminar esta condicion para considerar los sensores simulados para las alertas de inactividad
+                if(res.data[i].type != 'Tradicional - 1 contenedor' && auxInterval == 1){ // Eliminar esta condicion para considerar los sensores simulados para las alertas de inactividad
                   Vue.$toast.open({
                   message: "Sensor Inactivo!\n\n"+res.data[i].name,
                   type: "info",
                   position:"top-right",
                   duration: 3000,
                   dismissible: true
-                })
+                })//Request Sent Email Notification to User
                 /* try {
                     var res1 = null;
                     res1cl = await axios.get(`${API_URL}/notiemail`, {
                                                                   params: {
                                                                     title: 'SENSOR INACTIVO',
                                                                     body: "BASURERO:"+res.data[i].name+"\nStatus: INACTIVO\n",
+                                                                    rnc_compa" JSON.parse(sessionStorage.getItem('userdata)).rnc_compa,
                                                                     email: JSON.parse(sessionStorage.getItem('userdata')).email
                                                                   }
                                                                 });
@@ -390,13 +407,16 @@
         },
       },
       created(){
-        this.updateLastSeenDevices();
-        setInterval(this.updateLastSeenDevices,30000)
+      
+          this.updateLastSeenDevices();
+          if(auxInterval == 0){
+          setInterval(this.updateLastSeenDevices,30000)
+          auxInterval = 1
+        }
+     
+       
 
-        this.loadDataResumeCardsDashboard();
-        setInterval(this.loadDataResumeCardsDashboard,10000)
-
-        this.loadAvailableBinsOnMap();
+       
       
         
 
@@ -405,6 +425,18 @@
         this.$emit('childToParent', this.userlogged)
 
         this.userlogged = JSON.parse(sessionStorage.getItem('userdata'));
+
+         this.loadDataResumeCardsDashboard();
+        //setInterval(this.loadDataResumeCardsDashboard,10000)
+
+        this.loadAvailableBinsOnMap();
+
+        socket.on("mqtt_message", fetchedData => {
+          console.log("Entre")
+                   this.loadDataResumeCardsDashboard();
+                   this.auxCount = 1;
+                   this.loadAvailableBinsOnMap();
+            })
         
 
         if (this.userlogged.default_credentials == true) {

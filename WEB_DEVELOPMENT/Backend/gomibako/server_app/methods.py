@@ -36,6 +36,52 @@ class MethodsDatabase:
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
             return False
+
+    def delete_company(rnc):
+        try:
+            conn = Connectiondb.getConnectionToPostgre()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+            cur.execute('DELETE FROM public.company WHERE rnc=%s;',(rnc,))
+            conn.commit()
+            cur.close()
+            conn.close()
+            return True
+
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False
+
+    def delete_truck(code):
+        try:
+            conn = Connectiondb.getConnectionToPostgre()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+            cur.execute('DELETE FROM public.truck WHERE code=%s;',(code,))
+            conn.commit()
+            cur.close()
+            conn.close()
+            return True
+
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False
+
+    
+    def delete_user(xid):
+        try:
+            conn = Connectiondb.getConnectionToPostgre()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+            cur.execute('DELETE FROM public.user WHERE id=%s;',(xid,))
+            conn.commit()
+            cur.close()
+            conn.close()
+            return True
+
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False
     
     def get_list_company():
         try:
@@ -77,8 +123,36 @@ class MethodsDatabase:
             print(error)
             return False
     
-    
+    def modify_company(rnc,name,provi,address):
+        try:
+            conn = Connectiondb.getConnectionToPostgre()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
 
+            cur.execute('UPDATE public.company SET name=%s,provincia=%s,address=%s WHERE rnc = %s;',(name,provi,address,rnc))
+
+            conn.commit()
+            cur.close()
+            conn.close()
+            return True
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False
+
+
+    def modify_bin(deviceeui,coords,descrip,typex,material,rncComp):
+        try:
+            conn = Connectiondb.getConnectionToPostgre()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+            cur.execute('UPDATE public.dustbin SET coordinates=%s, description=%s,type=%s,material_waste=%s,rnc_compa=%s WHERE deviceeui = %s;',(coords,descrip,typex,material,rncComp,deviceeui))
+
+            conn.commit()
+            cur.close()
+            conn.close()
+            return True
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False
     def add_user(username,email,password,firstname,lastname,typeU,rncComp):
         try:
             conn = Connectiondb.getConnectionToPostgre()
@@ -291,6 +365,21 @@ class MethodsDatabase:
 
             cur.execute('UPDATE public.user SET username = %s, password = crypt(%s,password),default_credentials = false WHERE id = %s;',(str(username),str(password),uid))
             
+            conn.commit()
+            cur.close()
+            conn.close()
+            return True
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False
+    
+    def modify_driver(id,firstname,lastname,email):
+        try:
+            conn = Connectiondb.getConnectionToPostgre()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+            cur.execute('UPDATE public.user SET first_name=%s,last_name=%s,email=%s WHERE id = %s;',(firstname,lastname,email,id))
+
             conn.commit()
             cur.close()
             conn.close()

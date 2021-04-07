@@ -118,7 +118,7 @@
                           </b-col>
                           <b-col cols="6">
                             <div class="h5 mb-0 text-center mt-2 font-weight-bold text-gray-800">
-                              N/A</div>
+                             <b-badge variant="primary">{{batteryValue}}</b-badge></div>
                           </b-col>
 
                         </b-row>
@@ -349,6 +349,10 @@ import axios from 'axios';
 import mapboxgl from "mapbox-gl";
 import Swal from 'sweetalert2';
 const API_URL = process.env.API_URL;
+
+import io from 'socket.io-client';
+var socket = io.connect("http://localhost:5000");
+
 export default {
     components:{
         levelChart,
@@ -366,6 +370,7 @@ export default {
             loadedLine: false,
             tempValue: null,
             humValue: null,
+            batteryValue: null,
             binStatus: null,
             levelplastic: null,
             levelmetal: null,
@@ -377,11 +382,6 @@ export default {
             listAvailableBins: [{text: 'Please select an option'}],
             accessToken: 'pk.eyJ1IjoiYW50aG9ueXNha2EiLCJhIjoiY2tnbjBrZWR4MGkwNDJ0cGczb2UxNTE4YiJ9.WsEmhirejFVApuNz9Ivtlw',
             fields: [
-                {
-                    key: 'selected',
-                    label: '[*]',
-                    sortable: true
-                }, 
                 {
                     key: 'name',
                     label: 'NOMBRE',
@@ -416,11 +416,6 @@ export default {
             ],
             items: [ ],
             fieldsD: [
-                {
-                    key: 'selected',
-                    label: '[*]',
-                    sortable: true
-                }, 
                 {
                     key: 'name',
                     label: 'NOMBRE',
@@ -576,6 +571,7 @@ export default {
                         this.updatetime = data.created_date;
                         this.tempValue = data.data_sensor.temperature;
                         this.humValue = data.data_sensor.humidity;
+                        this.batteryValue = data.data_sensor.batteryLevel;
                         this.loadedDonut = true;
 
               } catch (error) {
@@ -713,13 +709,13 @@ export default {
               var res = await axios.get(`${API_URL}/bindata/0`,{ params: {namebin: this.selected.split(" ")[0] }});
 
               if (res.status == 200) {
-                clearInterval(x);
-                clearInterval(y);
+                //clearInterval(x);
+                //clearInterval(y);
                 this.namebin = this.selected
                 this.getLastValues()
                 this.getBinGraphicValues()
-                x = setInterval(this.getLastValues,5000)
-                y = setInterval(this.getBinGraphicValues,5000)   
+                //x = setInterval(this.getLastValues,5000)
+               // y = setInterval(this.getBinGraphicValues,5000)   
               }        
             } catch (error) {
               Swal.fire(
@@ -769,7 +765,7 @@ export default {
                               let row = {name:res.data[i].name,level:lvl,volumen:res1.data[x].data_sensor.volumen,temperature:res1.data[x].data_sensor.temperature,
                                         humidity:res1.data[x].data_sensor.humidity,nodedate:res1.data[x].data_sensor.nodeDate,date:res1.data[x].created_date,datatype:res1.data[x].data_sensor.datatype}
                               this.itemsD.push(row);
-                              console.log(res1.data[x].created_date)
+                              //console.log(res1.data[x].created_date)
                           }
                       }
                 }
@@ -789,6 +785,14 @@ export default {
         return this.itemsD.length
       }
     },
+    created(){
+
+       socket.on("mqtt_message", fetchedData => {
+                if(this.namebin != null){
+                   this.updateValuesPeriodically()
+                } 
+            })
+    },
     mounted(){
       this.$emit('childToParent', this.userlogged)
       this.loadAvailableBins()
@@ -797,14 +801,7 @@ export default {
       this.totalRows = this.itemsD.length
        
 
-       /* mapboxgl.accessToken = this.accessToken;
-
-           var map = new mapboxgl.Map({
-                container: "map",
-                style: "mapbox://styles/mapbox/streets-v11",
-                center: [-70.703692, 19.415888],
-                zoom: 12,
-            });*/
+     
     }
 }
 

@@ -12,6 +12,8 @@
 #include <math.h>       
 #include "ESP32Time.h"
 
+#define uS_TO_S_FACTOR 1000000  /* Conversion factor for micro seconds to seconds */
+#define TIME_TO_SLEEP  55        /* Time ESP32 will go to sleep (in seconds) */
 
 /********** Defines Constants Sensors **********/
 #define TRIG_PIN_0   18          // HC-SR04 trigger pin
@@ -22,6 +24,8 @@
 
 #define TRIG_PIN_2   32          // HC-SR04 trigger pin
 #define ECHO_PIN_2   33          // HC-SR04 echo pin
+
+#define BATTERY_MON_PIN   34          // Battery Monitor Level pin
 
 #define DHT_PIN   5 // DHT-22 Temperature Sensor data pin
 #define DHTTYPE DHT22
@@ -54,11 +58,12 @@ void setupRAK811Node(void);
 
 /***** Global Variables ******/
 char buffer[242];
-String dataBackup[8];
+RTC_DATA_ATTR String dataBackup[8];
 int count=0;
 int flag_count = 0;
 int flag_data_to_send = 0;
 ESP32Time rtc;
+RTC_DATA_ATTR int bootCount = 0;
 
 /********** BEGIN SETUP **********/
 void setup()
@@ -74,18 +79,22 @@ void setup()
   pinMode(TRIG_PIN_2, OUTPUT); //Trigger pin as output
   pinMode(ECHO_PIN_2, INPUT); //Echo pin as input
 
-  setupRAK811Node();
-
-  rtc.setTime(0, 16, 18, 26, 3, 2021);
+  if(bootCount == 0) {
+    setupRAK811Node();
+  } else {
+    DebugSerial.flush();
+    DebugSerial.println("WakeUp From Deep Sleep");
+    delay(1000);
+  }
   
- 
-  delay(2000); //Time to init the system
+  esp_sleep_enable_timer_wakeup(TIME_TO_SLEEP * uS_TO_S_FACTOR); // ESP32 wakes up every 40 seconds
 }
 
 void loop()
 {  
     float temperature = tempSensor.readTemperature(); // in Celsius
     float humidity = tempSensor.readHumidity(); // in percentage
+    float batteryLevel = map(analogRead(34), 0.0f, 4095.0f, 0, 100); // in percentage
     
     double lvlPlastic,lvlMetal,lvlPaperCarton = 0;
     int statusPlastic,statusMetal,statusPaperCarton,statusGeneral= 0;
@@ -169,14 +178,15 @@ void loop()
     DebugSerial.println(temperature);
     DebugSerial.println(humidity);
     DebugSerial.println(volumen);
+    DebugSerial.println(batteryLevel);
     DebugSerial.println("--------------\n");
     char dateS[30];
     rtc.getTimeDate().toCharArray(dateS,30);
     DebugSerial.println(dateS);
 
     //Load on variable buffer formatted sensor data(Strings)
-    sprintf(buffer,"%04d%04d%02d%02d%02d%01d%01d%01d%01d%06d",(int)(temperature*100),(int)(humidity*100),lvl_percent_Plastic,lvl_percent_Metal,lvl_percent_PaperCarton,statusPlastic,statusMetal,statusPaperCarton,statusGeneral,(int)(volumen*100));
-      strcat(buffer,dateS);
+    sprintf(buffer,"%04d%04d%03d%03d%03d%01d%01d%01d%01d%06d%05d",(int)(temperature*100),(int)(humidity*100),lvl_percent_Plastic,lvl_percent_Metal,lvl_percent_PaperCarton,statusPlastic,statusMetal,statusPaperCarton,statusGeneral,(int)(volumen*100),(int)(batteryLevel*100));
+    strcat(buffer,dateS);
     //Encode Buffer in HexString
     int len = strlen(buffer);
   
@@ -227,7 +237,7 @@ void loop()
         } else {
           DebugSerial.println("ACK NO RECIBIDO!");
           DebugSerial.println("SAVING DATA TO SEND LATER");
-          char x [] = {"4C4F47"};
+          char x [] = {"4C4F47"}; //LOG
           strcat(hex_str,x);
           dataBackup[count]= hex_str;
           DebugSerial.println(dataBackup[count]);
@@ -237,7 +247,11 @@ void loop()
         }
     }
 
-  delay(30000);
+  //delay(30000);
+  DebugSerial.println("Going to deep-sleep now");
+  DebugSerial.flush(); 
+  bootCount++;
+  esp_deep_sleep_start();
   
 } //End Infinity Loop
 
