@@ -352,7 +352,7 @@ const API_URL = process.env.API_URL;
 const SERVER_URL = process.env.SERVER_URL
 
 import io from 'socket.io-client';
-var socket = io.connect(`${SERVER_URL}`)
+var socket = io.connect(`${SERVER_URL}`,{transports: ['websocket']})
 
 export default {
     components:{

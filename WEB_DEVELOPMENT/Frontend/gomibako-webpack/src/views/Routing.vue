@@ -230,6 +230,8 @@ const mpbxDirectionClient = mapboxDirectionClient({accessToken:'pk.eyJ1IjoiYW50a
 const API_URL = process.env.API_URL;
 const SERVER_URL = process.env.SERVER_URL
 mapboxgl.accessToken = 'pk.eyJ1IjoiYW50aG9ueXNha2EiLCJhIjoiY2tnbjBrZWR4MGkwNDJ0cGczb2UxNTE4YiJ9.WsEmhirejFVApuNz9Ivtlw'
+import io from 'socket.io-client';
+var socket = io.connect(`${SERVER_URL}`,{transports: ['websocket']})
 
 
 export default {

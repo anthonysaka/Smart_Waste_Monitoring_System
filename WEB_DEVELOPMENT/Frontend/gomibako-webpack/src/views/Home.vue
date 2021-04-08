@@ -149,7 +149,7 @@
   var markerM = null;
   var x = 0;
   import io from 'socket.io-client';
-  var socket = io.connect(`${SERVER_URL}`)
+  var socket = io.connect(`${SERVER_URL}`,{transports: ['websocket']})
   var auxInterval = 0;
   var resx = false;
 
