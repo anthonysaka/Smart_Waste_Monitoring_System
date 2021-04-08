@@ -125,10 +125,11 @@ export default {
         console.log(value)
         this.userlogged = value
       },
-      async showToast(data) {
+      async showToast(data,type) {
        // Eliminar 2da condicion condicion para considerar los sensores simulados para las alertas de estados
         if(sessionStorage.getItem('userdata') !=  null && data.devName == 'BA000014'){
-           if (data.code == '1'){
+          if(type == 0){
+            if (data.code == '1'){
            Vue.$toast.open({
                   message: "Sensor FULL! - "+data.devName,
                   type: "warning",
@@ -172,7 +173,55 @@ export default {
           }
         }
 
-        }
+          } 
+          }
+          else if (type == 1){
+              Vue.$toast.open({
+                    message: "Ruta Completada! - "+"#"+data.id_route+"\n"+data.completed_date,
+                    type: "success",
+                    position:"top-left",
+                    duration: 5000,
+                    dismissible: true
+                  })
+
+            try {
+              var res = null;
+              res = await axios.get(`${API_URL}/notiemail`, {
+                                                            params: {
+                                                              title: 'RUTA COMPLETADA',
+                                                              body: "ID RUTA:"+data.id_route+"\nStatus: COMPLETADA\n"+"FECHA:"+data.completed_date,
+                                                              email: JSON.parse(sessionStorage.getItem('userdata')).email
+                                                            }
+                                                          });
+            } catch (error) {
+              console.log(error)
+            }
+          }
+          else if (type == 2){
+               Vue.$toast.open({
+                    message: "Data de Basurero! - "+""+data.nameBin+"\n"+"Correspondiente a:"+data.nodeDate+"\nStatus:"+data.status+"\nVer mas detalles en: Bins",
+                    type: "success",
+                    position:"top-right",
+                    duration: 5000,
+                    dismissible: true
+                  })
+
+            try {
+              var res = null;
+              res = await axios.get(`${API_URL}/notiemail`, {
+                                                            params: {
+                                                              title: data.status,
+                                                              body: "BASURERO"+data.nameBin+"\nStatus: DATA RECUPERADA [LOG]\n"+"FECHA CORRESPONDIENTE DATA:"+data.nodeDate,
+                                                              email: JSON.parse(sessionStorage.getItem('userdata')).email
+                                                            }
+                                                          });
+            } catch (error) {
+              console.log(error)
+            }
+
+          }
+        
+
        
         
       },
@@ -191,8 +240,19 @@ export default {
 
     socket.on("mqtt_message", fetchedData => {
                     var data = JSON.parse(fetchedData)
-                    this.showToast(data)
+                    this.showToast(data,0)
             })
+
+     socket.on("completed_route_message", fetchedData => {
+                    var data = JSON.parse(fetchedData)
+                    console.log("ENTRE1")
+                    this.showToast(data,1)
+            })
+      socket.on("log_data_message", fetchedData => {
+                    var data = JSON.parse(fetchedData,1)
+                    this.showToast(data,2)
+            })
+    
     
   },
 

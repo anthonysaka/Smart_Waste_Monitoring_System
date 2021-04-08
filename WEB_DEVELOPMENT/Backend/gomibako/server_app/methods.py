@@ -497,3 +497,18 @@ class MethodsDatabase:
         except (Exception, psycopg2.DatabaseError) as error:
             print(error)
             return False
+    
+    def completed_route(idr,status,date):
+        try:
+            conn = Connectiondb.getConnectionToPostgre()
+            cur = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
+
+            cur.execute('UPDATE public.routes SET status = %s, completed_date = %s WHERE id = %s;',(status,date,idr))
+            
+            conn.commit()
+            cur.close()
+            conn.close()
+            return True
+        except (Exception, psycopg2.DatabaseError) as error:
+            print(error)
+            return False

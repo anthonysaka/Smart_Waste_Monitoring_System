@@ -73,6 +73,7 @@ def handle_mqtt_message(client, userdata, message):
     json_sensor_data = json.dumps(dict_data['object'],indent=4)
     code = str(dict_data['object']['codeStatus'])
     nodeDate = str(dict_data['object']['nodeDate'])
+    datatype = str(dict_data['object']['datatype'])
 
     if(MethodsDatabase.save_sensor_data(device_eui,device_name,json_sensor_data,nodeDate, dtime.now())):
         print(dtime.now())
@@ -80,9 +81,12 @@ def handle_mqtt_message(client, userdata, message):
 
         #Conditions to send notification about status of fill level
         if code == "1" or code== "2":
-            print("entre")
             json_alertData =  json.dumps({'code':code,'devName':device_name})
             socketio.emit('mqtt_message',json_alertData,json=True)
+        elif datatype == 'LOG':
+            json_alertData =  json.dumps({'nameBin':device_name,'nodeDate':nodeDate,'status':'Data Recuperada [LOG]'})
+            socketio.emit('log_data_message',json_alertData,json=True)
+
     else:
         print("[*] Sensor Data Saved ERROR!\n")
 
@@ -493,9 +497,9 @@ def get_smart_routes():
         solution = generate_smart_routes(distance_matrix,demands,truck_capacities,cant_truck)
         return jsonify({'code':200,'solution':solution}),200
 
-@app.route("/gomibako/internalapi/1.0/routes",methods=['POST','GET','PUT'])
-def save_routes():
-    if request.method == 'POST':
+@app.route("/gomibako/internalapi/1.0/routes/<int:xtype>",methods=['POST','GET','PUT'])
+def save_routes(xtype):
+    if request.method == 'POST' and xtype == 0:
         rnc = request.json['rncCompa']
         route_info = json.dumps(request.json['route_info'])
         date = dtime.now()
@@ -505,7 +509,7 @@ def save_routes():
             return jsonify({'code':201,'response':'Guardado con exito'}),201
         else:
             abort(500,description="Error en la base de datos")
-    elif request.method == 'GET':
+    elif request.method == 'GET'  and xtype == 0:
         rncComp = request.args.get('rncComp')
 
         listRoutes = MethodsDatabase.load_routes(rncComp)
@@ -516,8 +520,7 @@ def save_routes():
             return jsonify({'code':404,'response':'No hay Rutas Registradas!'}),404
         else:
             abort(500,description="Error en la base de datos")
-    elif request.method == 'PUT':
-       
+    elif request.method == 'PUT'  and xtype == 0:
         usernameDriver = request.json['username_driver']
         status = request.json['status']
         idr = request.json['id']
@@ -526,6 +529,22 @@ def save_routes():
             return jsonify({'code':201,'response':"Ruta asignada con exito"}),201
         else:
             abort(500,description="Error en la base de datos")
+
+    elif request.method == 'PUT'  and xtype == 1:
+        date = request.json['date']
+        status = request.json['status']
+        idr = request.json['id_route']
+        print(idr)
+        print(status)
+        print(date)
+
+        if(MethodsDatabase.completed_route(idr,status,date)):
+            json_alertData =  json.dumps({'id_route':idr,'completed_date':date})
+            socketio.emit('completed_route_message',json_alertData,json=True)
+            return jsonify({'code':201,'response':"Ruta asignada con exito"}),201
+        else:
+            abort(500,description="Error en la base de datos")
+
 
 @app.route("/gomibako/internalapi/1.0/notiemail",methods=['GET'])
 def email_notification():

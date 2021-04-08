@@ -790,8 +790,11 @@ export default {
        socket.on("mqtt_message", fetchedData => {
                 if(this.namebin != null){
                    this.updateValuesPeriodically()
+                   this.itemsD = []
+                   this.loadDataBinTable()
                 } 
             })
+
     },
     mounted(){
       this.$emit('childToParent', this.userlogged)

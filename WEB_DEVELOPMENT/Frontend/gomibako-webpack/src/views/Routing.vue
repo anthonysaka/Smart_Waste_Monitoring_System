@@ -147,9 +147,12 @@
                                         value-field="item" text-field="name" disabled-field="notEnabled"></b-form-select>
                             </div> 
                           
-
-                             <b-button class="mt-4" @click="setRouteToDriver()" variant="primary">Asignar</b-button>
-
+                            <b-container style=" display: flex;
+                                                align-items: center;
+                                                justify-content: center;"> 
+                                <b-button class="btn-lg"  @click="setRouteToDriver()" variant="primary">Asignar</b-button>
+                            </b-container>
+                           
                             
                         </b-modal>
                     </div>
@@ -416,15 +419,18 @@ export default {
             let idRoute = this.idR
             let user = this.selected.split('-')[1]
             try {
-                var res = await axios.put(`${API_URL}/routes`,{ id: idRoute, username_driver: user, status: 'Asignada'});
+                var res = await axios.put(`${API_URL}/routes/0`,{ id: idRoute, username_driver: user, status: 'Asignada'});
                 console.log(res.status)
                     Swal.fire(
                                 'Ruta asignada con exito!',
                                 '',
                                 'success'
                             ).then(() => {
-                                this.loadRoutesTable() 
-                                //this.$root.$emit('hide::modal', this.asignarModal.id)
+                                this.itemsR = []
+                                this.itemsRC = []
+                                this.loadRoutesTable()
+                                this.loadRoutesSinAsignarTable() 
+                                this.$root.$emit('bv::hide::modal', this.asignarModal.id)
                     });
             } catch (error) {
                  console.log(error)
@@ -1004,7 +1010,7 @@ export default {
         },
         async loadRoutesSinAsignarTable(){
              try {
-                var res = await axios.get(`${API_URL}/routes`,{ params: {rncComp: this.userlogged.rnc_compa}});
+                var res = await axios.get(`${API_URL}/routes/0`,{ params: {rncComp: this.userlogged.rnc_compa}});
 
                for (var i = 0; i < res.data.length; i++) {  
                    if (res.data[i].status == 'Sin Asignar'){
@@ -1020,7 +1026,7 @@ export default {
         },
         async loadRoutesTable(){
              try {
-                var res = await axios.get(`${API_URL}/routes`,{ params: {rncComp: this.userlogged.rnc_compa}});
+                var res = await axios.get(`${API_URL}/routes/0`,{ params: {rncComp: this.userlogged.rnc_compa}});
 
                for (var i = 0; i < res.data.length; i++) {  
                    if (res.data[i].status != 'Sin Asignar'){
@@ -1074,7 +1080,7 @@ export default {
                             }
                 console.log(body)
                 try {
-                    var res = await axios.post(`${API_URL}/routes`, body);
+                    var res = await axios.post(`${API_URL}/routes/0`, body);
                     console.log(res.status)
                     Swal.fire(
                         'Rutas guardadas con exito!',
@@ -1108,6 +1114,10 @@ export default {
         this.loadRoutesSinAsignarTable();
         this.loadRoutesTable();
         this.loadDriver();
+
+          socket.on("completed_route_message", fetchedData => {
+                   this.loadRoutesTable();
+            })
 
       //  this.prueba();
         
