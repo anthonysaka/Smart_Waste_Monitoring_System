@@ -228,6 +228,7 @@ const mapboxDirectionClient = require('@mapbox/mapbox-sdk/services/directions');
 const mpbxDirectionClient = mapboxDirectionClient({accessToken:'pk.eyJ1IjoiYW50aG9ueXNha2EiLCJhIjoiY2tnbjBrZWR4MGkwNDJ0cGczb2UxNTE4YiJ9.WsEmhirejFVApuNz9Ivtlw'});
 
 const API_URL = process.env.API_URL;
+const SERVER_URL = process.env.SERVER_URL
 mapboxgl.accessToken = 'pk.eyJ1IjoiYW50aG9ueXNha2EiLCJhIjoiY2tnbjBrZWR4MGkwNDJ0cGczb2UxNTE4YiJ9.WsEmhirejFVApuNz9Ivtlw'
 
 

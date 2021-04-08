@@ -165,6 +165,7 @@
 <script>
 import axios from 'axios';
 const API_URL = process.env.API_URL;
+const SERVER_URL = process.env.SERVER_URL
 import Swal from 'sweetalert2';
 export default {
     data(){

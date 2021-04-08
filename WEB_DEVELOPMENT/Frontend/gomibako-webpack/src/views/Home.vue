@@ -139,6 +139,7 @@
   import Swal from 'sweetalert2';
   import axios from 'axios';
   const API_URL = process.env.API_URL;
+  const SERVER_URL = process.env.SERVER_URL;
   import levelChart from '../components/donutChart';
   import Vue from 'vue';
   import VueToast from 'vue-toast-notification';
@@ -148,7 +149,7 @@
   var markerM = null;
   var x = 0;
   import io from 'socket.io-client';
-  var socket = io.connect("http://localhost:5000");
+  var socket = io.connect(`${SERVER_URL}`)
   var auxInterval = 0;
   var resx = false;
 

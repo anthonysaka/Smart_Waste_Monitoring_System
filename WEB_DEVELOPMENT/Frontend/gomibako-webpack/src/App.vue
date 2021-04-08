@@ -92,15 +92,17 @@
 </template>
 
 <script>
+const API_URL = process.env.API_URL;
+const SERVER_URL = process.env.SERVER_URL;
 import io from 'socket.io-client';
-var socket = io.connect("http://localhost:5000")
+var socket = io.connect(`${SERVER_URL}`)
 import Swal from 'sweetalert2';
 import Vue from 'vue';
 import VueToast from 'vue-toast-notification';
 import 'vue-toast-notification/dist/theme-sugar.css';
 Vue.use(VueToast);
 import axios from 'axios';
-const API_URL = process.env.API_URL;
+
 
 export default {
   data(){

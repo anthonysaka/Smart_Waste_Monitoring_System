@@ -408,6 +408,7 @@
 import axios from 'axios';
 import mapboxgl from "mapbox-gl";
 const API_URL = process.env.API_URL;
+const SERVER_URL = process.env.SERVER_URL
 import Swal from 'sweetalert2';
 
 export default {

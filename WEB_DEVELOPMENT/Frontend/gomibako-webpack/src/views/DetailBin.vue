@@ -349,9 +349,10 @@ import axios from 'axios';
 import mapboxgl from "mapbox-gl";
 import Swal from 'sweetalert2';
 const API_URL = process.env.API_URL;
+const SERVER_URL = process.env.SERVER_URL
 
 import io from 'socket.io-client';
-var socket = io.connect("http://localhost:5000");
+var socket = io.connect(`${SERVER_URL}`)
 
 export default {
     components:{
